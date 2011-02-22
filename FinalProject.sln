@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinalProject", "FinalProject\FinalProject.csproj", "{D688F946-A2BE-4987-88C5-ECE35679F153}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogFileVisualizer", "LogFileVisualizer\LogFileVisualizer.csproj", "{6BBAF8D3-2285-4B72-9A05-D2490F3D719E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6BBAF8D3-2285-4B72-9A05-D2490F3D719E}.Debug|x86.ActiveCfg = Debug|x86
+		{6BBAF8D3-2285-4B72-9A05-D2490F3D719E}.Debug|x86.Build.0 = Debug|x86
+		{6BBAF8D3-2285-4B72-9A05-D2490F3D719E}.Release|x86.ActiveCfg = Release|x86
+		{6BBAF8D3-2285-4B72-9A05-D2490F3D719E}.Release|x86.Build.0 = Release|x86
+		{D688F946-A2BE-4987-88C5-ECE35679F153}.Debug|x86.ActiveCfg = Debug|x86
+		{D688F946-A2BE-4987-88C5-ECE35679F153}.Debug|x86.Build.0 = Debug|x86
+		{D688F946-A2BE-4987-88C5-ECE35679F153}.Release|x86.ActiveCfg = Release|x86
+		{D688F946-A2BE-4987-88C5-ECE35679F153}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = LogFileVisualizer\LogFileVisualizer.csproj
+	EndGlobalSection
+EndGlobal
