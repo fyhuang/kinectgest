@@ -141,7 +141,7 @@ namespace LogFileVisualizer
 				mAngle -= ft * turnSpeed;
 			}
 			
-			float accumSpeed = 30.0f;
+			float accumSpeed = 25.0f;
 			if (Keyboard[Key.Up]) {
 				mAccum += accumSpeed * ft;
 			}
@@ -157,20 +157,22 @@ namespace LogFileVisualizer
 			}
 			
 			if ( mAccum > 1.0f ) {
-				mCurrJointState += 1;
+				int num = (int)Math.Floor(mAccum);
+				mCurrJointState += num;
 				if ( mCurrJointState >= mJointStates.Count ) {
 					mCurrJointState = mJointStates.Count - 1;
 				}
-				mAccum = 0.0f;
+				mAccum -= num * 1.0f;
 				
 				System.Console.WriteLine("Current state: {0}", mCurrJointState);
 			}
 			else if ( mAccum < -1.0f ) {
-				mCurrJointState -= 1;
+				int num = (int)Math.Floor(Math.Abs(mAccum));
+				mCurrJointState -= num;
 				if ( mCurrJointState < 0 ) {
 					mCurrJointState = 0;
 				}
-				mAccum = 0.0f;
+				mAccum += num * 1.0f;
 				
 				System.Console.WriteLine("Current state: {0}", mCurrJointState);
 			}
@@ -218,7 +220,12 @@ namespace LogFileVisualizer
 		
 		public static void Main (string[] args)
 		{
-			using ( var vw = new VisualizerWindow("gestures/track_punch_00.log") ) {
+			string filename = "gestures/track_punch_00.log";
+			if ( args.Length > 0 ) {
+				filename = args[0];
+			}
+			
+			using ( var vw = new VisualizerWindow(filename) ) {
 				vw.Run(30.0);
 			}
 		}
