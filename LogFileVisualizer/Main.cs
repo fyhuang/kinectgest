@@ -8,62 +8,55 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
+using FinalProject;
+
 namespace LogFileVisualizer
 {
 	class VisualizerWindow : GameWindow
 	{
-		class JointState {
-			public float time;
-			public Vector3[] joints;
-			
-			public JointState(int num, ref string line) {
-				string[] words = line.Split();
-				if ( words.Length != num + 1 ) throw new Exception("Count mismatch!");
-				
-				joints = new Vector3[num];
-				
-				time = float.Parse(words[0]);
-				for ( int i = 0; i < (words.Length-1) / 3; i++ ) {
-					int ri = (i*3) + 1;
-					
-					joints[i].X = float.Parse(words[ri]);
-					joints[i].Y = float.Parse(words[ri+1]);
-					joints[i].Z = float.Parse(words[ri+2]);
-				}
-			}
-			
-			public void UpdateBB(ref Vector3 bb1, ref Vector3 bb2) {
-				foreach ( var v in joints ) {
-					if ( v.X < bb1.X ) bb1.X = v.X;
-				}
-			}
-		}
-		
 		readonly string mLogFilename;
 		int mNumJoints;
-		List<JointState> mJointStates;
-		
-		float mAccum;
+		RelativeAction mAction;
+		RelativeJointState mCurrState;
 		
 		float mScale;
 		float mAngle;
-		int mCurrJointState;
-		
-		OpenTK.Vector3 mBB1, mBB2;
+		float mTime;
 		
 		public VisualizerWindow(string lfn)
 			: base(640, 640, GraphicsMode.Default, "Log file visualizer")
 		{
 			mLogFilename = lfn;
-			mJointStates = new List<JointState>();
-			
-			mAccum = 0.0f;
 			
 			mScale = 1.0f;
 			mAngle = 0.0f;
-			mCurrJointState = 0;
+			mTime = 0.0f;
 			
 			//Keyboard.KeyUp += HandleKeyboardKeyUp;
+		}
+		
+		IEnumerator<RawJointState> LoadEnumerator() {
+			System.Console.WriteLine("Loading {0}...", mLogFilename);
+			
+			int numLoaded = 0;
+			var file = new StreamReader(mLogFilename);
+			while ( !file.EndOfStream ) {
+				string line = file.ReadLine().Trim();
+				if ( line.Length == 0 ) continue;
+				if ( line[0] == '#' ) continue;
+				if ( mNumJoints == -1 ) {
+					// Count the number of joints
+					mNumJoints = (line.Split().Length - 1) / 3;
+					System.Console.WriteLine("Number joints: {0}", mNumJoints);
+				}
+				
+				var j = RawJointState.FromInputLine(line);
+				if ( j.Joints.Length != mNumJoints ) throw new Exception("Mismatch in number of joints!");
+				yield return j;
+				numLoaded++;
+			}
+			
+			System.Console.WriteLine("Loaded {0} joint states from {1}", numLoaded, mLogFilename);
 		}
 		
 		protected override void OnLoad(EventArgs e) {
@@ -73,29 +66,9 @@ namespace LogFileVisualizer
 			GL.PointSize(8.0f);
 			GL.Enable(EnableCap.DepthTest);
 			
-			
 			mNumJoints = -1;
-			mBB1 = new Vector3(100.0f, 100.0f, 100.0f);
-			mBB2 = new Vector3(-100.0f, -100.0f, -100.0f);
-			
-			System.Console.WriteLine("Loading {0}...", mLogFilename);
-			var file = new StreamReader(mLogFilename);
-			while ( !file.EndOfStream ) {
-				string line = file.ReadLine().Trim();
-				if ( line.Length == 0 ) continue;
-				if ( line[0] == '#' ) continue;
-				if ( mNumJoints == -1 ) {
-					// Count the number of joints
-					mNumJoints = line.Split().Length - 1;
-					System.Console.WriteLine("Number joints: {0}", mNumJoints);
-				}
-				
-				JointState j = new JointState(mNumJoints, ref line);
-				j.UpdateBB(ref mBB1, ref mBB2);
-				mJointStates.Add(j);
-			}
-			
-			System.Console.WriteLine("Loaded {0} joint states from {1}", mJointStates.Count, mLogFilename);
+			mAction = new RelativeAction(new EnumerableFromEnumerator<RawJointState>(LoadEnumerator()));
+			mCurrState = RelativeJointState.CloneFrom(mAction.States[0]);
 		}
 		
 		void Rescale() {
@@ -133,7 +106,7 @@ namespace LogFileVisualizer
 				System.Console.WriteLine("Scale now {0}", mScale);
 			}
 			
-			float turnSpeed = 1.0f;
+			float turnSpeed = 2.0f;
 			if (Keyboard[Key.Left]) {
 				mAngle += ft * turnSpeed;
 			}
@@ -141,41 +114,22 @@ namespace LogFileVisualizer
 				mAngle -= ft * turnSpeed;
 			}
 			
-			float accumSpeed = 25.0f;
+			float timeAdvanceSpeed = 1.0f;
 			if (Keyboard[Key.Up]) {
-				mAccum += accumSpeed * ft;
+				mTime += timeAdvanceSpeed * ft;
 			}
 			else if (Keyboard[Key.Down]) {
-				mAccum -= accumSpeed * ft;
-			}
-			else {
-				mAccum = 0.0f;
+				mTime -= timeAdvanceSpeed * ft;
 			}
 			
 			if (Keyboard[Key.R]) {
-				mCurrJointState = 0;
+				mTime = 0.0f;
 			}
 			
-			if ( mAccum > 1.0f ) {
-				int num = (int)Math.Floor(mAccum);
-				mCurrJointState += num;
-				if ( mCurrJointState >= mJointStates.Count ) {
-					mCurrJointState = mJointStates.Count - 1;
-				}
-				mAccum -= num * 1.0f;
-				
-				System.Console.WriteLine("Current state: {0}", mCurrJointState);
-			}
-			else if ( mAccum < -1.0f ) {
-				int num = (int)Math.Floor(Math.Abs(mAccum));
-				mCurrJointState -= num;
-				if ( mCurrJointState < 0 ) {
-					mCurrJointState = 0;
-				}
-				mAccum += num * 1.0f;
-				
-				System.Console.WriteLine("Current state: {0}", mCurrJointState);
-			}
+			if ( mTime < 0.0f ) mTime = 0.0f;
+			else if ( mTime > mAction.TotalTime ) mTime = mAction.TotalTime;
+			
+			mAction.InterpolateState(mTime, ref mCurrState);
         }
 		
 		void HandleKeyboardKeyUp (object sender, KeyboardKeyEventArgs e)
@@ -206,7 +160,7 @@ namespace LogFileVisualizer
 
             GL.Begin(BeginMode.Points);
 			int index = 0;
-			foreach ( var joint in mJointStates[mCurrJointState].joints ) {
+			foreach ( var joint in mCurrState.RelativeJoints ) {
 				GL.Color3(0.0f, (float)((index * 16) % 256) / 256.0f, 1.0f);
 				GL.Vertex3(joint);
 				index += 1;
