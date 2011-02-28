@@ -35,7 +35,7 @@
     <Reference Include="System" />
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\MiniEngine\Deps\opentk\Binaries\OpenTK\Release\OpenTK.dll</HintPath>
+      <HintPath>..\Deps\opentk\Binaries\OpenTK\Debug\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Data" />
