@@ -35,9 +35,11 @@
   <ItemGroup>
     <Compile Include="RawJointState.cs" />
     <Compile Include="AABB.cs" />
-    <Compile Include="RelativeJointSet.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="EnumerableFromEnumerator.cs" />
+    <Compile Include="Gesture.cs" />
+    <Compile Include="JointState.cs" />
+    <Compile Include="LogFileLoader.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">

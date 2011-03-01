@@ -7,81 +7,19 @@ using OpenTK;
 
 namespace FinalProject
 {
-	public struct RelativeJointState
-	{
-		static public Dictionary<string, int> NamesToJoints;
-		static RelativeJointState()
-		{
-			NamesToJoints = new Dictionary<string, int>() {
-				{"neck", 0},
-				{"head", 1},
-				{"right-shoulder", 2},
-				{"left-shoulder", 6},
-				{"right-elbow", 3},
-				{"left-elbow", 7},
-				{"right-wrist", 4},
-				{"right-pe", 18},
-				{"left-pe", 19},
-				{"left-wrist", 8},
-				{"right-p", 5},
-				{"right-h", 10},
-				{"left-h", 14},
-				{"left-p", 9},
-				{"right-knee", 11},
-				{"left-knee", 15},
-				{"right-ankle", 12},
-				{"right-foot", 13}
-				// Missing: left ankle, left foot
-			};
-			
-			// Sanity check
-			foreach ( var nj in NamesToJoints ) {
-				var c = NamesToJoints.Count(x => (x.Value == nj.Value));
-				if ( c > 1 ) throw new Exception("Duplicate joints in relative joint name list!");
-			}
-		}
-		
-		public float Timestamp;
-		public Vector3 NeckPos;
-		public Vector3[] RelativeJoints;
-		
-		static public RelativeJointState FromRawJointState(RawJointState rjs)
-		{
-			RelativeJointState rel = new RelativeJointState();
-			
-			rel.Timestamp = rjs.Timestamp;
-			rel.NeckPos = rjs.Joints[0];
-			rel.RelativeJoints = new Vector3[rjs.Joints.Length];
-			for ( int i = 0; i < rjs.Joints.Length - 1; i++ ) {
-				rel.RelativeJoints[i] = rjs.Joints[i+1] - rel.NeckPos;
-			}
-			return rel;
-		}
-		
-		static public RelativeJointState CloneFrom(RelativeJointState rjs)
-		{
-			RelativeJointState rel = new RelativeJointState();
-			rel.Timestamp = rjs.Timestamp;
-			rel.NeckPos = rjs.NeckPos;
-			rel.RelativeJoints = new Vector3[rjs.RelativeJoints.Length];
-			rjs.RelativeJoints.CopyTo(rel.RelativeJoints, 0);
-			return rel;
-		}
-	}
-	
 	/// <summary>
 	/// Represents one "action" (kick, punch, jump, whatever) as a set of discrete <see cref="RelativeJointState"/>.
 	/// </summary>
-	public class RelativeAction
+	public class Gesture
 	{
 		public float StartTime;
-		public List<RelativeJointState> States;
+		public List<JointState> States;
 		
-		public RelativeAction(IEnumerable<RawJointState> states)
+		public Gesture(IEnumerable<RawJointState> states)
 		{
-			States = new List<RelativeJointState>();
+			States = new List<JointState>();
 			foreach ( var js in states ) {
-				States.Add(RelativeJointState.FromRawJointState(js));
+				States.Add(JointState.FromRawJointState(js));
 			}
 			StartTime = States[0].Timestamp;
 		}
@@ -102,7 +40,7 @@ namespace FinalProject
 		/// <param name="state">
 		/// Where to write the results to. IMPORTANT: the array pointed to by state.Joints WILL be modified!
 		/// </param>
-		public void InterpolateState(float time, ref RelativeJointState state)
+		public void InterpolateState(float time, ref JointState state)
 		{
 			if ( time <= 0.0f ) {
 				States[0].RelativeJoints.CopyTo(state.RelativeJoints, 0);
@@ -124,19 +62,41 @@ namespace FinalProject
 			}
 		}
 		
+		class LateralPositionEnumerable : IEnumerable<Vector3> {
+			Gesture parent;
+			int joint;
+			public LateralPositionEnumerable(Gesture g, int j) {
+				parent = g;
+				joint = j;
+				System.Diagnostics.Debug.Assert(j >= 0 && j < parent.States[0].RelativeJoints.Length);
+			}
+			
+			public IEnumerator<Vector3> GetEnumerator() {
+				for ( int i = 0; i < parent.States.Count; i++ ) {
+					yield return parent.States[i].RelativeJoints[joint];
+				}
+			}
+			IEnumerator IEnumerable.GetEnumerator() { return GetEnumerator(); }
+		}
+		public IEnumerable<Vector3> JointPositions(string name) {
+			int num = JointState.NamesToJoints[name.Trim().ToLower()];
+			return new LateralPositionEnumerable(this, num);
+		}
 		
-		class SurrondingEnumerable : IEnumerable<RelativeJointState> {
+		
+		/*
+		class SurrondingEnumerable : IEnumerable<JointState> {
 			int myidx;
 			int numEachSide;
-			RelativeAction parent;
+			Gesture parent;
 			
-			public SurrondingEnumerable(RelativeAction action, int num_per_side) {
+			public SurrondingEnumerable(Gesture action, int num_per_side) {
 				myidx = -num_per_side;
 				numEachSide = num_per_side;
 				parent = action;
 			}
 			
-			public IEnumerator<RelativeJointState> GetEnumerator() {
+			public IEnumerator<JointState> GetEnumerator() {
 				while ( myidx <= numEachSide ) {
 					if ( myidx < 0 ) yield return parent.States[0];
 					else if ( myidx >= parent.States.Count ) yield return parent.States[parent.States.Count-1];
@@ -152,9 +112,9 @@ namespace FinalProject
 		public void RemoveNoise()
 		{
 			for ( int i = 0; i < States.Count; i++ ) {
-				var newstate = RelativeJointState.CloneFrom(States[i]);
+				var newstate = JointState.CloneFrom(States[i]);
 			}
 		}
+		*/
 	}
 }
-
