@@ -7,18 +7,17 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 
 using FinalProject;
-using GoogleChartSharp;
+using ZedGraph;
 
 namespace LogFileVisualizer
 {
-	class FigureForm : Form {
+	class BitmapFigure : Form {
 		Bitmap mBitmap;
 		const int BorderSize = 10;
 		
-		public FigureForm(string url)
+		public BitmapFigure(Bitmap b)
 		{
-			var stream = WebRequest.Create(url).GetResponse().GetResponseStream();
-			mBitmap = new Bitmap(stream);
+			mBitmap = b;
 			SetupForm();
 		}
 		
@@ -36,8 +35,26 @@ namespace LogFileVisualizer
 		}
 	}
 	
+	class ZedGraphFigure : Form {
+		const int BorderSize = 10;
+		
+		ZedGraphControl mZG;
+		public ZedGraphFigure(ZedGraphControl zg) {
+			this.ClientSize = new Size(500, 400);
+			
+			mZG = zg;
+			mZG.Parent = this;
+			mZG.Location = new Point(BorderSize, BorderSize);
+			mZG.Size = new Size(ClientRectangle.Width - 2*BorderSize, ClientRectangle.Height - 2*BorderSize);
+			
+			mZG.AxisChange();
+		}
+	}
+	
 	public class JointPlotter
 	{
+		static Color[] GraphColors = new[]{Color.OrangeRed, Color.PaleVioletRed, Color.Navy, Color.ForestGreen};
+		
 		Gesture mGesture;
 		string mJointName;
 		
@@ -49,33 +66,35 @@ namespace LogFileVisualizer
 		
 		public void DisplayPlot()
 		{
-			string url = BuildPlotURL();
-			Application.Run(new FigureForm(url));
+			var plot = BuildPlot();
+			Application.Run(new ZedGraphFigure(plot));
 		}
 		
-		string BuildPlotURL()
+		float VecCom(OpenTK.Vector3 v, int c) {
+			if ( c == 0 ) return v.X;
+			else if ( c == 1 ) return v.Y;
+			else return v.Z;
+		}
+		
+		ZedGraphControl BuildPlot()
 		{
-			var chart = new LineChart(500, 400, LineChartType.MultiDataSet);
 			int jointnum = JointState.NamesToJoints[mJointName.Trim().ToLower()];
+			double[] timestamps = mGesture.States.Select(x => (double)(x.Timestamp - mGesture.StartTime)).ToArray();
 			
-			float[] data = mGesture.States.Select(x => x.RelativeJoints[jointnum].X).ToArray();
-			float[] xcoords = mGesture.States.Select(x => x.Timestamp - mGesture.StartTime).ToArray();
-			var datasets = new List<float[]>();
-			datasets.Add(data);
-			datasets.Add(xcoords);
+			var zg = new ZedGraphControl();
+			var gp = zg.GraphPane;
 			
-			chart.SetData(datasets);
+			gp.Title.Text = String.Format("Joint \"{0}\" position", mJointName);
+			gp.XAxis.Title.Text = "Time";
 			
-			var leftaxis = new ChartAxis(ChartAxisType.Left);
-			leftaxis.SetRange((int)Math.Floor(data.Min()), (int)Math.Ceiling(data.Max()));
-			chart.AddAxis(leftaxis);
-			var botaxis = new ChartAxis(ChartAxisType.Bottom);
-			botaxis.SetRange((int)Math.Floor(xcoords.Min()), (int)Math.Ceiling(xcoords.Max()));
-			chart.AddAxis(botaxis);
+			/*for ( int i = 0; i < 3; i++ ) {
+				double[] positions = mGesture.States.Select(x => (double)VecCom(x.RelativeJoints[jointnum], i)).ToArray();
+				gp.AddCurve(String.Format("{0}", (char)('X'+i)), timestamps, positions, GraphColors[i]);
+			}*/
+			double[] positions = mGesture.States.Select(x => (double)x.RelativeAngles[jointnum]).ToArray();
+			gp.AddCurve("Angle", timestamps, positions, GraphColors[3]);
 			
-			System.Console.WriteLine("Chart URL: {0}", chart.GetUrl());
-			
-			return chart.GetUrl();
+			return zg;
 		}
 	}
 }
