@@ -38,7 +38,7 @@ namespace LogFileVisualizer
 				string whichJoint = System.Console.ReadLine();
 				var gest = new Gesture(new LogFileLoader(filename));
 				var jp = new JointPlotter(gest, whichJoint);
-				jp.DisplayPlot();
+				jp.DisplayPlots();
 				break;
 			}
 		}

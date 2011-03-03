@@ -8,14 +8,14 @@ using OpenTK;
 namespace FinalProject
 {
 	/// <summary>
-	/// Represents one "action" (kick, punch, jump, whatever) as a set of discrete <see cref="RelativeJointState"/>.
+	/// Represents one "gesture" (kick, punch, jump, whatever) as a set of discrete instances of <see cref="JointState"/>.
 	/// </summary>
-	public class Gesture
+	public class InputGesture
 	{
 		public float StartTime;
 		public List<JointState> States;
 		
-		public Gesture(IEnumerable<RawJointState> states)
+		public InputGesture(IEnumerable<RawJointState> states)
 		{
 			States = new List<JointState>();
 			foreach ( var js in states ) {
@@ -63,9 +63,9 @@ namespace FinalProject
 		}
 		
 		class LateralPositionEnumerable : IEnumerable<Vector3> {
-			Gesture parent;
+			InputGesture parent;
 			int joint;
-			public LateralPositionEnumerable(Gesture g, int j) {
+			public LateralPositionEnumerable(InputGesture g, int j) {
 				parent = g;
 				joint = j;
 				System.Diagnostics.Debug.Assert(j >= 0 && j < parent.States[0].RelativeJoints.Length);

@@ -2,12 +2,13 @@ using System;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using OpenTK;
 
 namespace FinalProject
 {
-	public struct JointState
+	public class JointState
 	{
 		static public Dictionary<string, int> NamesToJoints;
 		static public List<int> JointParents;
@@ -66,6 +67,19 @@ namespace FinalProject
 		/// Relative joint angles to parent joint (Vector3.UnitY if no parent)
 		/// </summary>
 		public float[] RelativeAngles;
+		
+		public Vector3 Pos(string name)
+		{
+			Debug.Assert(NamesToJoints.ContainsKey(name));
+			return RelativeJoints[NamesToJoints[name]];
+		}
+		
+		public float Angle(string name)
+		{
+			Debug.Assert(NamesToJoints.ContainsKey(name));
+			return RelativeAngles[NamesToJoints[name]];
+		}
+		
 		
 		static public JointState FromRawJointState(RawJointState rjs)
 		{

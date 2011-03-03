@@ -55,19 +55,23 @@ namespace LogFileVisualizer
 	{
 		static Color[] GraphColors = new[]{Color.OrangeRed, Color.PaleVioletRed, Color.Navy, Color.ForestGreen};
 		
-		Gesture mGesture;
+		InputGesture mGesture;
 		string mJointName;
 		
-		public JointPlotter(Gesture g, string jointname)
+		public JointPlotter(InputGesture g, string jointname)
 		{
 			mGesture = g;
 			mJointName = jointname;
 		}
 		
-		public void DisplayPlot()
+		public void DisplayPlots()
 		{
-			var plot = BuildPlot();
-			Application.Run(new ZedGraphFigure(plot));
+			var aplot = BuildAnglePlot();
+			var zf1 = new ZedGraphFigure(aplot);
+			zf1.Visible = true;
+			
+			var pplot = BuildPositionPlot();
+			Application.Run(new ZedGraphFigure(pplot));
 		}
 		
 		float VecCom(OpenTK.Vector3 v, int c) {
@@ -76,7 +80,24 @@ namespace LogFileVisualizer
 			else return v.Z;
 		}
 		
-		ZedGraphControl BuildPlot()
+		ZedGraphControl BuildAnglePlot()
+		{
+			int jointnum = JointState.NamesToJoints[mJointName.Trim().ToLower()];
+			double[] timestamps = mGesture.States.Select(x => (double)(x.Timestamp - mGesture.StartTime)).ToArray();
+			
+			var zg = new ZedGraphControl();
+			var gp = zg.GraphPane;
+			
+			gp.Title.Text = String.Format("Joint \"{0}\" angle", mJointName);
+			gp.XAxis.Title.Text = "Time";
+			
+			double[] positions = mGesture.States.Select(x => (1.0 / Math.PI * 180.0) * (double)x.RelativeAngles[jointnum]).ToArray();
+			gp.AddCurve("Angle", timestamps, positions, GraphColors[3]);
+			
+			return zg;
+		}
+		
+		ZedGraphControl BuildPositionPlot()
 		{
 			int jointnum = JointState.NamesToJoints[mJointName.Trim().ToLower()];
 			double[] timestamps = mGesture.States.Select(x => (double)(x.Timestamp - mGesture.StartTime)).ToArray();
@@ -87,12 +108,10 @@ namespace LogFileVisualizer
 			gp.Title.Text = String.Format("Joint \"{0}\" position", mJointName);
 			gp.XAxis.Title.Text = "Time";
 			
-			/*for ( int i = 0; i < 3; i++ ) {
+			for ( int i = 0; i < 3; i++ ) {
 				double[] positions = mGesture.States.Select(x => (double)VecCom(x.RelativeJoints[jointnum], i)).ToArray();
 				gp.AddCurve(String.Format("{0}", (char)('X'+i)), timestamps, positions, GraphColors[i]);
-			}*/
-			double[] positions = mGesture.States.Select(x => (double)x.RelativeAngles[jointnum]).ToArray();
-			gp.AddCurve("Angle", timestamps, positions, GraphColors[3]);
+			}
 			
 			return zg;
 		}

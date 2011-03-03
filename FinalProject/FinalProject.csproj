@@ -37,10 +37,12 @@
     <Compile Include="AABB.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="EnumerableFromEnumerator.cs" />
-    <Compile Include="Gesture.cs" />
     <Compile Include="JointState.cs" />
     <Compile Include="LogFileLoader.cs" />
     <Compile Include="Model\BayesianModel.cs" />
+    <Compile Include="Model\ISingleFrameFeature.cs" />
+    <Compile Include="Model\BasicFeatures.cs" />
+    <Compile Include="InputGesture.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
