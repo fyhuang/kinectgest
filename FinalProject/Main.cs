@@ -14,6 +14,21 @@ namespace FinalProject
 					return;
 				}
 			}
+			
+			////////////////////
+			// CHANGE THIS LINE TO USE A NEW RECOGNIZER
+			////////////////////
+			IRecognizer rec = new SingleFrameRecognizer();
+			
+			
+			switch ( c ) {
+			case Command.TestRecognize:
+				string filename = "gestures/track_high_kick_01.log";
+				if ( args.Length > 1 ) filename = args[1];
+				var result = rec.RecognizeSingleGesture(new InputGesture(new LogFileLoader(filename)));
+				Console.WriteLine(result.ToString());
+				break;
+			}
 		}
 	}
 }

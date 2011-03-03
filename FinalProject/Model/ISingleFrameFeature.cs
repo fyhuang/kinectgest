@@ -1,5 +1,6 @@
 using System;
-namespace FinalProject
+
+namespace FinalProject.Features
 {
 	public interface ISingleFrameFeature
 	{

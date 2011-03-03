@@ -36,7 +36,7 @@ namespace LogFileVisualizer
 			case Command.PlotJoint:
 				System.Console.WriteLine("Which joint to graph?");
 				string whichJoint = System.Console.ReadLine();
-				var gest = new Gesture(new LogFileLoader(filename));
+				var gest = new InputGesture(new LogFileLoader(filename));
 				var jp = new JointPlotter(gest, whichJoint);
 				jp.DisplayPlots();
 				break;

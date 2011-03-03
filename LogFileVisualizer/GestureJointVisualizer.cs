@@ -15,7 +15,7 @@ namespace LogFileVisualizer
 	class GestureJointVisualizer : GameWindow
 	{
 		readonly string mLogFilename;
-		Gesture mGesture;
+		InputGesture mGesture;
 		JointState mCurrState;
 		
 		float mScale;
@@ -39,7 +39,7 @@ namespace LogFileVisualizer
 			GL.PointSize(8.0f);
 			GL.Enable(EnableCap.DepthTest);
 			
-			mGesture = new Gesture(new LogFileLoader(mLogFilename));
+			mGesture = new InputGesture(new LogFileLoader(mLogFilename));
 			mCurrState = JointState.CloneFrom(mGesture.States[0]);
 		}
 		
