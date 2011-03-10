@@ -16,6 +16,21 @@ namespace LogFileVisualizer
 	{
 		enum Command { ViewGesture, PlotJoint };
 		
+		static string GetJointName() {
+			System.Console.WriteLine("Which joint to graph?");
+			
+			string jn = null;
+			while ( jn == null ) {
+				jn = System.Console.ReadLine();
+				if ( !JointState.NamesToJoints.ContainsKey(jn) ) {
+					System.Console.WriteLine("Joint with name {0} doesn't exist, enter another:", jn);
+					jn = null;
+				}
+			}
+			
+			return jn;
+		}
+		
 		public static void Main (string[] args)
 		{
 			string filename = "gestures/track_high_kick_00.log";
@@ -27,6 +42,7 @@ namespace LogFileVisualizer
 				}
 			}
 			
+			string whichJoint;
 			switch ( cmd ) {
 			case Command.ViewGesture:
 				using ( var vw = new GestureJointVisualizer(filename) ) {
@@ -34,10 +50,9 @@ namespace LogFileVisualizer
 				}
 				break;
 			case Command.PlotJoint:
-				System.Console.WriteLine("Which joint to graph?");
-				string whichJoint = System.Console.ReadLine();
-				var gest = new InputGesture(new LogFileLoader(filename));
-				var jp = new JointPlotter(gest, whichJoint);
+				whichJoint = GetJointName();
+				var gest1 = new InputGesture(new LogFileLoader(filename));
+				var jp = new JointPlotter(gest1, whichJoint);
 				jp.DisplayPlots();
 				break;
 			}

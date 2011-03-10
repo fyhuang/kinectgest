@@ -9,6 +9,13 @@ namespace FinalProject
 		public string Gesture3;
 		public float Confidence3;
 		
+		static public RecognizerResult Empty() {
+			var rr = new RecognizerResult();
+			rr.Gesture1 = rr.Gesture2 = rr.Gesture3 = "";
+			rr.Confidence1 = rr.Confidence2 = rr.Confidence3 = 0.0f;
+			return rr;
+		}
+		
 		public override string ToString()
 		{
 			return string.Format("[RecognizerResult]: \"{0}\" with {1} confidence", Gesture1, Confidence1);

@@ -39,12 +39,14 @@
     <Compile Include="EnumerableFromEnumerator.cs" />
     <Compile Include="JointState.cs" />
     <Compile Include="LogFileLoader.cs" />
-    <Compile Include="Model\BayesianModel.cs" />
-    <Compile Include="Model\ISingleFrameFeature.cs" />
-    <Compile Include="Model\BasicFeatures.cs" />
     <Compile Include="InputGesture.cs" />
     <Compile Include="IRecognizer.cs" />
     <Compile Include="SingleFrameRecognizer.cs" />
+    <Compile Include="Utility.cs" />
+    <Compile Include="Features\BayesianModel.cs" />
+    <Compile Include="Features\ISingleFrameFeature.cs" />
+    <Compile Include="Features\Features.cs" />
+    <Compile Include="Features\ISingleGestureFeature.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
@@ -58,6 +60,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Learning\" />
-    <Folder Include="Model\" />
+    <Folder Include="Features\" />
   </ItemGroup>
 </Project>

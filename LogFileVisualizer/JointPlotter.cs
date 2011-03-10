@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 
 using FinalProject;
+using FinalProject.Utility;
 using ZedGraph;
 
 namespace LogFileVisualizer
@@ -74,12 +75,6 @@ namespace LogFileVisualizer
 			Application.Run(new ZedGraphFigure(pplot));
 		}
 		
-		float VecCom(OpenTK.Vector3 v, int c) {
-			if ( c == 0 ) return v.X;
-			else if ( c == 1 ) return v.Y;
-			else return v.Z;
-		}
-		
 		ZedGraphControl BuildAnglePlot()
 		{
 			int jointnum = JointState.NamesToJoints[mJointName.Trim().ToLower()];
@@ -109,8 +104,8 @@ namespace LogFileVisualizer
 			gp.XAxis.Title.Text = "Time";
 			
 			for ( int i = 0; i < 3; i++ ) {
-				double[] positions = mGesture.States.Select(x => (double)VecCom(x.RelativeJoints[jointnum], i)).ToArray();
-				gp.AddCurve(String.Format("{0}", (char)('X'+i)), timestamps, positions, GraphColors[i]);
+				double[] positions = mGesture.States.Select(x => (double)x.RelativeJoints[jointnum].Comp(i)).ToArray();
+				gp.AddCurve(String.Format("{0}", Utility.CompToChar(i)), timestamps, positions, GraphColors[i]);
 			}
 			
 			return zg;
