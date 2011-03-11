@@ -64,7 +64,7 @@ namespace FinalProject
 		/// </summary>
 		public Vector3[] RelativeJoints;
 		/// <summary>
-		/// Relative joint angles to parent joint (Vector3.UnitY if no parent)
+		/// Relative joint angles to parent joint (Vector3.UnitY if no parent). Angles are in radians.
 		/// </summary>
 		public float[] RelativeAngles;
 		

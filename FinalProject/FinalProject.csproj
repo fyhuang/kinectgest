@@ -41,12 +41,13 @@
     <Compile Include="LogFileLoader.cs" />
     <Compile Include="InputGesture.cs" />
     <Compile Include="IRecognizer.cs" />
-    <Compile Include="SingleFrameRecognizer.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="Features\BayesianModel.cs" />
     <Compile Include="Features\ISingleFrameFeature.cs" />
     <Compile Include="Features\Features.cs" />
     <Compile Include="Features\ISingleGestureFeature.cs" />
+    <Compile Include="Model\SingleFrameRecognizer.cs" />
+    <Compile Include="Model\AggregateFeatureRecognizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
@@ -61,5 +62,6 @@
   <ItemGroup>
     <Folder Include="Learning\" />
     <Folder Include="Features\" />
+    <Folder Include="Model\" />
   </ItemGroup>
 </Project>

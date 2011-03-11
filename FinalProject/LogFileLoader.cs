@@ -16,7 +16,7 @@ namespace FinalProject
 		}
 		
 		public IEnumerator<RawJointState> GetEnumerator() {
-			System.Console.WriteLine("Loading {0}...", mLogFilename);
+			//System.Console.WriteLine("Loading {0}...", mLogFilename);
 			
 			mNumJoints = -1;
 			
@@ -29,7 +29,7 @@ namespace FinalProject
 				if ( mNumJoints == -1 ) {
 					// Count the number of joints
 					mNumJoints = (line.Split().Length - 1) / 3;
-					System.Console.WriteLine("Number joints: {0}", mNumJoints);
+					//System.Console.WriteLine("Number joints: {0}", mNumJoints);
 				}
 				
 				var j = RawJointState.FromInputLine(line);

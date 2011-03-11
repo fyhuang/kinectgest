@@ -39,10 +39,16 @@ namespace FinalProject.Features
 		string JointName;
 		float Threshold;
 		public MaxAngleAmplitudeFeature(string jn, float threshold) {
+			JointName = jn;
 			Threshold = threshold;
 		}
 		public bool QueryGesture(InputGesture ig) {
-			return false;
+			Func<JointState, float> f = x => x.Angle(JointName);
+			float min = ig.States.Min(f), max = ig.States.Max(f);
+			return (max - min) > Threshold;
+		}
+		public override string ToString () {
+			return string.Format("[MaxAngleAmplitudeFeature({0},{1:0.000}]", JointName, Threshold);
 		}
 	}
 	
@@ -52,14 +58,20 @@ namespace FinalProject.Features
 		
 		static AllFeatures() {
 			SingleGestureFeatures = new List<ISingleGestureFeature> {
-				new MaxAmplitudeFeature("right-foot", 0.1f, 1),
-				new MaxAmplitudeFeature("right-foot", 0.3f, 1),
-				new MaxAmplitudeFeature("right-foot", 0.5f, 1),
-				new MaxAmplitudeFeature("right-foot", 1.0f, 1),
-				
-				new MaxAmplitudeFeature("right-palm", 0.3f, 1),
-				new MaxAmplitudeFeature("right-palm", 0.5f, 1)
 			};
+			
+			SingleGestureFeatures.AddRange(Enumerable.Range(1,4)
+			                               .Select(x => new MaxAmplitudeFeature("right-foot", 0.1f * (float)x, 1))
+			                               .Select(x => (ISingleGestureFeature)x)
+			                               );
+			SingleGestureFeatures.AddRange(Enumerable.Range(2,4)
+			                               .Select(x => new MaxAmplitudeFeature("right-palm", 0.1f * (float)x, 1))
+			                               .Select(x => (ISingleGestureFeature)x)
+			                               );
+			SingleGestureFeatures.AddRange(Enumerable.Range(1,8)
+			                               .Select(x => new MaxAngleAmplitudeFeature("right-wrist", (float)x * (float)(Math.PI / 12.0)))
+			                               .Select(x => (ISingleGestureFeature)x)
+			                               );
 		}
 	}
 }

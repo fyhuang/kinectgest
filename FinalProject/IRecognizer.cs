@@ -1,4 +1,7 @@
 using System;
+using System.Text;
+using System.Collections.Generic;
+
 namespace FinalProject
 {
 	public struct RecognizerResult {
@@ -18,7 +21,12 @@ namespace FinalProject
 		
 		public override string ToString()
 		{
-			return string.Format("[RecognizerResult]: \"{0}\" with {1} confidence", Gesture1, Confidence1);
+			var sb = new StringBuilder();
+			sb.Append("[RecognizerResult]:\n");
+			sb.Append(string.Format("\t1. \"{0}\" with {1} confidence\n", Gesture1, Confidence1));
+			sb.Append(string.Format("\t2. \"{0}\" with {1} confidence\n", Gesture2, Confidence2));
+			sb.Append(string.Format("\t3. \"{0}\" with {1} confidence", Gesture3, Confidence3));
+			return sb.ToString();
 		}
 	}
 	
@@ -30,6 +38,11 @@ namespace FinalProject
 		
 		void ClearHistory();
 		RecognizerResult AddNewData(JointState js);
+		
+		
+		void Train(IDictionary<string, IList<InputGesture>> gestures);
+		void SaveModel(string filename);
+		void LoadModel(string filename);
 	}
 }
 
