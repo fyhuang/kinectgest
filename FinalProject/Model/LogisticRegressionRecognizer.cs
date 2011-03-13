@@ -72,10 +72,17 @@ namespace FinalProject
 			}
 			return result;
 		}
+		
+		bool _Converged(List<float> oldWeights, List<float> weights, float threshold) {
+			for ( int i = 0; i < oldWeights.Count; i++ ) {
+				if ( Math.Abs(oldWeights[i] - weights[i]) > threshold ) return false;
+			}
+			return true;
+		}
 
 		public void Train (IDictionary<string, IList<InputGesture>> gestures)
 		{
-			const float threshold = 0.05f;
+			const float threshold = 0.1f;
 			
 			List<IContinuousGestureFeature> features = Features.AllFeatures.ContinuousGestureFeatures;
 			var allgestures = new List<KeyValuePair<string, InputGesture>>();
@@ -99,7 +106,7 @@ namespace FinalProject
 				
 				var sw = new System.Diagnostics.Stopwatch(); sw.Start();
 				var num_iters = 0;
-				float diff = 0.0f;
+				//float diff = 0.0f;
 				do {
 					oldWeights.Clear();
 					oldWeights.AddRange(mWeights[kvp.Key]);
@@ -116,9 +123,9 @@ namespace FinalProject
 					}
 					
 					num_iters++;
-					diff = _Diff(oldWeights, mWeights[kvp.Key]);
-					Console.WriteLine("Iteration {0}, diff {1}", num_iters, diff);
-				} while ( diff > threshold );
+					//diff = _Diff(oldWeights, mWeights[kvp.Key]);
+					//Console.WriteLine("Iteration {0}, diff {1}", num_iters, diff);
+				} while ( !_Converged(oldWeights, mWeights[kvp.Key], threshold * mStepSize) );
 				
 				Console.Write("{0}: {1} iterations converged in {2}\n  Weights: ", kvp.Key, num_iters, sw.Elapsed);
 				mWeights[kvp.Key].ForEach(x => Console.Write("{0} ", x));

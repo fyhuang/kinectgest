@@ -186,9 +186,9 @@ namespace FinalProject.Features
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
 				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
-				new NeckAmplitude(),
+				new NeckAmplitude()
 				
-				new NeutralDeviation("right-palm", JointState.JointComponent.PosX)
+				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX)
 				//new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX)
 			};
 		}
