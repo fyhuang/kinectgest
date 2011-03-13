@@ -26,13 +26,20 @@ namespace FinalProject
 			Console.WriteLine("Gestures per second: {0}", 1000.0f / (sw.ElapsedMilliseconds / (float)numiters));
 		}
 		
-		static IDictionary<string, IList<InputGesture>> LoadTrainingData(string[] names) {
+		static bool IsTraining(int ix, int cvix, int max) {
+			if ( (ix + cvix) % (max / 4 + 1) == 0 ) return false;
+			return true;
+		}
+		
+		static IDictionary<string, IList<InputGesture>> LoadTrainingData(int cvix, string[] names) {
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
-				int last = Enumerable.Range(1,100).Last(x => File.Exists(String.Format("gestures/track_{0}_{1:00}.log", name, x)));
+				int last = Enumerable.Range(1,100).First(x => !File.Exists(String.Format("gestures/track_{0}_{1:00}.log", name, x))) - 1;
 				Console.WriteLine("{0} has {1} instances", name, last);
-				for ( int i = 0; i < last - 2; i++ ) { // -2 is to set aside some for testing set
+				
+				for ( int i = 0; i < last; i++ ) {
+					if ( !IsTraining(i, cvix, last) ) continue;
 					output[name].Add(new InputGesture(new LogFileLoader(String.Format("gestures/track_{0}_{1:00}.log", name, i))));
 				}
 			}
@@ -41,7 +48,45 @@ namespace FinalProject
 			return output;
 		}
 		
-		enum Command { Train, TestRecognize, PrintGestureFeatures, BenchmarkRecognize,
+		static IDictionary<string, IList<InputGesture>> LoadTestData(int cvix, string[] names) {
+			var output = new Dictionary<string, IList<InputGesture>>();
+			foreach ( var name in names ) {
+				output.Add(name, new List<InputGesture>());
+				int last = Enumerable.Range(1,100).First(x => !File.Exists(String.Format("gestures/track_{0}_{1:00}.log", name, x))) - 1;
+				Console.WriteLine("{0} has {1} instances", name, last);
+				
+				for ( int i = 0; i < last; i++ ) {
+					if ( IsTraining(i, cvix, last) ) continue;
+					output[name].Add(new InputGesture(new LogFileLoader(String.Format("gestures/track_{0}_{1:00}.log", name, i))));
+				}
+			}
+			
+			System.Console.WriteLine("Done loading test data");
+			return output;
+		}
+		
+		static int GetCVIndex() {
+			var file = new StreamReader(File.Open("cvindex.txt", FileMode.OpenOrCreate));
+			try {
+				int ix = int.Parse(file.ReadToEnd());
+				return ix;
+			}
+			catch ( Exception ) {
+				return 0;
+			}
+			finally {
+				file.Close();
+			}
+		}
+		
+		static void SaveCVIndex(int ix) {
+			var file = new StreamWriter(File.Open("cvindex.txt", FileMode.Create));
+			file.Write(ix);
+			file.Close();
+		}
+		
+		enum Command { Train, TestSingle, TestRecognize, PrintGestureFeatures, BenchmarkRecognize,
+			CycleCrossValidation,
 			Help };
 		static public void Main(string[] args)
 		{
@@ -55,6 +100,9 @@ namespace FinalProject
 				return;
 			}
 			
+			// For CV
+			int cv_index = GetCVIndex();
+			
 			////////////////////
 			// CHANGE THIS LINE TO USE A NEW RECOGNIZER
 			////////////////////
@@ -65,19 +113,41 @@ namespace FinalProject
 			
 			string filename = "gestures/track_high_kick_01.log";
 			if ( args.Length > 1 ) filename = args[1];
+			
+			string[] trainingNames = {"high_kick", "punch", "throw", "clap", "jump", "flick_right"};
 
 			switch ( c ) {
 			case Command.Train:
-				string[] trainingNames = {"high_kick", "punch", "throw", "clap", "jump", "flick_right"};
-				rec.Train(LoadTrainingData(trainingNames));
+				Console.WriteLine("Using cross-validation index {0}", cv_index);
+				rec.Train(LoadTrainingData(cv_index, trainingNames));
 				rec.SaveModel(model_filename);
 				System.Console.WriteLine("Saved trained model to {0}", model_filename);
 				break;
-			case Command.TestRecognize:
+			case Command.TestSingle:
 				rec.LoadModel(model_filename);
 				Console.WriteLine("Loaded model from {0}", model_filename);
 				var result = rec.RecognizeSingleGesture(new InputGesture(new LogFileLoader(filename)));
 				Console.WriteLine(result.ToString());
+				break;
+			case Command.TestRecognize:
+				Console.WriteLine("Using cross-validation index {0}", cv_index);
+				rec.LoadModel(model_filename);
+				Console.WriteLine("Loaded model from {0}", model_filename);
+				
+				int total = 0, correct = 0;
+				var test_gestures = LoadTestData(cv_index, trainingNames);
+				foreach ( var gn in test_gestures ) {
+					foreach ( var tg in gn.Value ) {
+						total++;
+						var result2 = rec.RecognizeSingleGesture(tg);
+						if ( result2.Gesture1 == gn.Key ) {
+							correct++;
+						}
+					}
+				}
+				
+				Console.WriteLine("\nTEST RESULTS:\n\t{0} correct / {1} total = {2}% correct",
+				                  correct, total, (float)correct / (float)total * 100.0f);
 				break;
 				
 			case Command.PrintGestureFeatures:
@@ -89,6 +159,10 @@ namespace FinalProject
 				
 			case Command.BenchmarkRecognize:
 				BenchmarkRecognize();
+				break;
+				
+			case Command.CycleCrossValidation:
+				SaveCVIndex(cv_index+1);
 				break;
 			}
 		}

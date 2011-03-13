@@ -61,7 +61,7 @@ namespace FinalProject.Features
 			};
 			
 			SingleGestureFeatures.AddRange(Enumerable.Range(1,4)
-			                               .Select(x => new MaxAmplitudeFeature("right-foot", 0.1f * (float)x, 1))
+			                               .Select(x => new MaxAmplitudeFeature("right-foot", 0.2f * (float)x, 1))
 			                               .Select(x => (ISingleGestureFeature)x)
 			                               );
 			SingleGestureFeatures.AddRange(Enumerable.Range(2,4)
