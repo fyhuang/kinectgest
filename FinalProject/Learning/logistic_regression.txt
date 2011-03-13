@@ -1,0 +1,54 @@
+weights_dict Logistic_regression(gestures, labels, feature_funcs, gesture_classes, step=0.05):
+   // gestures: list of gesture sequences
+   // labels: list true labels (string) of the previous gesture sequences
+   // feature_funcs: list of feature functions that take in a gesture and spits out a value
+   // gesture_classes: list of strings that are class names of gestures
+   // returns a dictionary weights such that weights[class_name] is an array of weights for each feature_function
+
+   num_gestures = length(gestures)
+   num_features = length(feature_funcs) + 1 // or just hard code this part or something
+   
+   /* initialize weights_dict here however you want */
+
+   feature_values = ones(num_features)
+   for (gest_index = 0; gest_index < num_gestures; gest_index++)
+      for (feat_index = 1; feat_index < num_features; feat_index++) // notice feature_values[0] is always 1
+         feature_values[gest_index][feat_index] = feature_funcs[index-1](gestures[gest_index])
+
+   foreach class_name in gesture_classes:
+      weights_dict[class_name] = ones(num_features) // initialize all weights of this class to 1
+   
+      true_values = zeros(num_gestures) // array of true values: 1 if the gesture label math this specific class, and 0 otherwise
+      for (gest_index = 0; gest_index < num_gestures; gest_index++)
+         if (labels[gest_index] == class_name) true_values[gest_index] = 1
+         
+      old_weights = zeros(num_features)
+      do {
+         old_weights = weights_dict[class_name]
+         
+         error_sum = 0
+         for (gest_index = 0; gest_index < num_gestures; gest_index++)
+            error_sum += (true_values[gest_index] - sigmoid(weights_dict[class_name], feature_values[gest_index])) * feature_values[gest_index][feat_index]
+
+         for (feat_index = 1; feat_index < num_features; feat_index++)
+            weights_dict[class_name][feat_index] += step * error_sum
+      } while (!converge(old_weights, weights_dict[class_name]))
+
+   
+float sigmoid(weights, feature_values)
+   // weights: a list of weights
+   // feature_values: a list of numbers essentially
+   // returns a number between 0 and 1
+   dot_product = 0
+   for (index = 0; index < num_features; index++)
+      dot_product += weights[index] * feature_values[index]
+
+   return 1 / (1 + exp(-dot_product))
+
+
+bool converge(old_weights, new_weights, threshold=0.005)
+   for (index = 0; index < length(old_weights); index++)
+      if (abs(old_weights[index] - new_weights[index]) > threshold)
+         return false
+   
+   return true
