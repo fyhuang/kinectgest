@@ -155,6 +155,9 @@ namespace FinalProject
 				foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
 				}
+				foreach ( var f in Features.AllFeatures.ContinuousGestureFeatures ) {
+					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
+				}
 				break;
 				
 			case Command.BenchmarkRecognize:

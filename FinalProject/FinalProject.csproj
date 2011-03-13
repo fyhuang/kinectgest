@@ -48,6 +48,7 @@
     <Compile Include="Features\ISingleGestureFeature.cs" />
     <Compile Include="Model\SingleFrameRecognizer.cs" />
     <Compile Include="Model\AggregateFeatureRecognizer.cs" />
+    <Compile Include="Features\IContinuousGestureFeature.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
