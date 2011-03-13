@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -14,7 +15,7 @@ namespace LogFileVisualizer
 {
 	class LogFileVisualizer
 	{
-		enum Command { ViewGesture, PlotJoint };
+		enum Command { ViewGesture, PlotJoint, PlotJointsFromGestures };
 		
 		static string GetJointName() {
 			System.Console.WriteLine("Which joint to graph?");
@@ -52,8 +53,21 @@ namespace LogFileVisualizer
 			case Command.PlotJoint:
 				whichJoint = GetJointName();
 				var gest1 = new InputGesture(new LogFileLoader(filename));
-				var jp = new JointPlotter(gest1, whichJoint);
-				jp.DisplayPlots();
+				var jp = new JointPlotter(gest1, whichJoint, true);
+				Application.Run(jp.DisplayPlots());
+				break;
+			case Command.PlotJointsFromGestures:
+				whichJoint = GetJointName();
+				var plotlist = new List<JointPlotter>();
+				var fnames = LogFileLoader.LogFilenames(filename);
+				Form last = null;
+				foreach ( var name in fnames ) {
+					var gest2 = new InputGesture(new LogFileLoader(name));
+					var jp2 = new JointPlotter(gest2, whichJoint, false);
+					plotlist.Add(jp2);
+					last = jp2.DisplayPlots();
+				}
+				Application.Run(last);
 				break;
 			}
 		}

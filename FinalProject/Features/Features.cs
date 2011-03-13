@@ -69,35 +69,88 @@ namespace FinalProject.Features
 	#region Continuous features
 	public class JointAmplitude : IContinuousGestureFeature {
 		string JointName;
-		int ComponentIx;
-		public JointAmplitude(string jn, int cmp) {
+		JointState.JointComponent JointComponent;
+		bool Directional;
+		public JointAmplitude(string jn, JointState.JointComponent jc, bool d) {
 			JointName = jn;
-			ComponentIx = cmp;
+			JointComponent = jc;
+			Directional = d;
 		}
 		public float QueryGesture(InputGesture ig) {
-			Func<JointState, float> f = x => x.Pos(JointName).Comp(ComponentIx);
+			Func<JointState, float> f = x => x.Component(JointName, JointComponent);
 			float min = ig.States.Min(f), max = ig.States.Max(f);
-			return max - min;
+			
+			if ( Directional ) {
+				bool before = ig.States.FindIndex(x => x.Component(JointName, JointComponent) == min) <
+					ig.States.FindIndex(x => x.Component(JointName, JointComponent) == max);
+				return (before) ? max - min : min - max;
+			}
+			else {
+				return max - min;
+			}
 		}
 		public override string ToString () {
-			return string.Format("[JointAmplitude({0},{1})]", JointName, FinalProject.Utility.Utility.CompToChar(ComponentIx));
+			return string.Format("[JointAmplitude({0},{1})]", JointName, JointComponent.ToString());
 		}
 	}
 	
-	public class JointAngleAmplitude : IContinuousGestureFeature {
+	public class NeutralDeviation : IContinuousGestureFeature {
 		string JointName;
-		public JointAngleAmplitude(string jn) {
+		JointState.JointComponent JointComponent;
+		public NeutralDeviation(string jn, JointState.JointComponent jc) {
 			JointName = jn;
+			JointComponent = jc;
 		}
 		public float QueryGesture(InputGesture ig) {
-			Func<JointState, float> f = x => x.Angle(JointName);
+			float np = ig.States[0].Component(JointName, JointComponent) +
+				ig.States[ig.States.Count - 1].Component(JointName, JointComponent);
+			np /= 2.0f;
+			float posd = ig.States.Select(x => x.Component(JointName, JointComponent)).Where(x => x >= np).Select(x => x - np).Sum(),
+				  negd = ig.States.Select(x => x.Component(JointName, JointComponent)).Where(x => x < np).Select(x => x - np).Sum();
+			return posd + negd;
+		}
+		public override string ToString () {
+			return string.Format("[NeutralDeviation]");
+		}
+	}
+	
+	public class NeckAmplitude : IContinuousGestureFeature {
+		public float QueryGesture(InputGesture ig) {
+			Func<JointState, float> f = x => x.NeckPos.Y;
 			float min = ig.States.Min(f), max = ig.States.Max(f);
 			return max - min;
 		}
 		public override string ToString () {
-			return string.Format("[JointAngleAmplitude({0}]", JointName);
+			return string.Format("[NeckAmplitude]");
 		}
 	}
+	
+	public class NumberCriticalPoints : IContinuousGestureFeature {
+		string JointName;
+		JointState.JointComponent JointComponent;
+		
+		public NumberCriticalPoints(string jn, JointState.JointComponent jc) {
+			JointName = jn;
+			JointComponent = jc;
+		}
+		public float QueryGesture(InputGesture ig) {
+			Func<JointState, float> f = x => x.Component(JointName, JointComponent);
+			float min = ig.States.Min(f), max = ig.States.Max(f);
+			float center = (max + min) / 2.0f;
+			float dist_threshold = 0.5f;
+			
+			var count = 0;
+			foreach ( var js in ig.States ) {
+				bool maxthres = (js.Component(JointName, JointComponent) - center) > (max - center) * dist_threshold;
+				bool minthres = (center - js.Component(JointName, JointComponent)) > (center - min) * dist_threshold;
+			}
+			
+			return count;
+		}
+	}
+	
+	// TODO:  measure divergence between X direction and Z direction (right flick)
+	// Normalized by slope, # frames
 	#endregion
 	
 	
@@ -128,10 +181,15 @@ namespace FinalProject.Features
 			
 			
 			ContinuousGestureFeatures = new List<IContinuousGestureFeature> {
-				new JointAmplitude("right-foot", 1),
-				new JointAmplitude("right-palm", 0),
-				new JointAmplitude("right-palm", 1),
-				new JointAngleAmplitude("right-wrist")
+				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
+				new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
+				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
+				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
+				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
+				new NeckAmplitude(),
+				
+				new NeutralDeviation("right-palm", JointState.JointComponent.PosX)
+				//new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX)
 			};
 		}
 	}

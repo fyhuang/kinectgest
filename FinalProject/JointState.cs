@@ -6,6 +6,8 @@ using System.Diagnostics;
 
 using OpenTK;
 
+using FinalProject.Utility;
+
 namespace FinalProject
 {
 	public class JointState
@@ -78,6 +80,17 @@ namespace FinalProject
 		{
 			Debug.Assert(NamesToJoints.ContainsKey(name));
 			return RelativeAngles[NamesToJoints[name]];
+		}
+		
+		public enum JointComponent { PosX = 0, PosY, PosZ, Angle };
+		public float Component(string name, JointComponent jc)
+		{
+			if ( jc == JointState.JointComponent.Angle ) {
+				return Angle(name);
+			}
+			else {
+				return Pos(name).Comp((int)jc);
+			}
 		}
 		
 		

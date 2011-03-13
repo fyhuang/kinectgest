@@ -44,6 +44,18 @@ namespace FinalProject
 		IEnumerator IEnumerable.GetEnumerator() {
 			return GetEnumerator();
 		}
+		
+		public static IEnumerable<string> LogFilenames(string gesture_name) {
+			var output = new List<string>();
+			int index = 0;
+			while ( true ) {
+				var filename = String.Format("gestures/track_{0}_{1:00}.log", gesture_name, index);
+				if ( !File.Exists(filename) ) break;
+				output.Add(filename);
+				index++;
+			}
+			return output;
+		}
 	}
 }
 

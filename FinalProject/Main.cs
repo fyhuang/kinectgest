@@ -35,12 +35,13 @@ namespace FinalProject
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
-				int last = Enumerable.Range(1,100).First(x => !File.Exists(String.Format("gestures/track_{0}_{1:00}.log", name, x))) - 1;
+				var fnames = LogFileLoader.LogFilenames(name).ToList();
+				int last = fnames.Count;
 				Console.WriteLine("{0} has {1} instances", name, last);
 				
 				for ( int i = 0; i < last; i++ ) {
 					if ( !IsTraining(i, cvix, last) ) continue;
-					output[name].Add(new InputGesture(new LogFileLoader(String.Format("gestures/track_{0}_{1:00}.log", name, i))));
+					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
 				}
 			}
 			
@@ -52,12 +53,13 @@ namespace FinalProject
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
-				int last = Enumerable.Range(1,100).First(x => !File.Exists(String.Format("gestures/track_{0}_{1:00}.log", name, x))) - 1;
+				var fnames = LogFileLoader.LogFilenames(name).ToList();
+				int last = fnames.Count;
 				Console.WriteLine("{0} has {1} instances", name, last);
 				
 				for ( int i = 0; i < last; i++ ) {
 					if ( IsTraining(i, cvix, last) ) continue;
-					output[name].Add(new InputGesture(new LogFileLoader(String.Format("gestures/track_{0}_{1:00}.log", name, i))));
+					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
 				}
 			}
 			
@@ -106,7 +108,7 @@ namespace FinalProject
 			////////////////////
 			// CHANGE THIS LINE TO USE A NEW RECOGNIZER
 			////////////////////
-			IRecognizer rec = new AggregateFeatureRecognizer();
+			IRecognizer rec = new LogisticRegressionRecognizer();
 			Console.WriteLine("Using recognizer {0}", rec.GetType().ToString());
 			string model_filename = rec.GetType().ToString() + ".model";
 			
@@ -114,7 +116,7 @@ namespace FinalProject
 			string filename = "gestures/track_high_kick_01.log";
 			if ( args.Length > 1 ) filename = args[1];
 			
-			string[] trainingNames = {"high_kick", "punch", "throw", "clap", "jump", "flick_right"};
+			string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 
 			switch ( c ) {
 			case Command.Train:
@@ -134,27 +136,34 @@ namespace FinalProject
 				rec.LoadModel(model_filename);
 				Console.WriteLine("Loaded model from {0}", model_filename);
 				
-				int total = 0, correct = 0;
 				var test_gestures = LoadTestData(cv_index, trainingNames);
+				int[] total = Enumerable.Range(0, test_gestures.Count).Select(x => 0).ToArray(),
+					  correct = Enumerable.Range(0, test_gestures.Count).Select(x => 0).ToArray();
+				int i = 0;
+				Console.WriteLine();
 				foreach ( var gn in test_gestures ) {
 					foreach ( var tg in gn.Value ) {
-						total++;
+						total[i]++;
 						var result2 = rec.RecognizeSingleGesture(tg);
 						if ( result2.Gesture1 == gn.Key ) {
-							correct++;
+							correct[i]++;
 						}
 					}
+					Console.WriteLine("{0}: {1} correct / {2} total = {3}% correct",
+					                  gn.Key,
+					                  correct[i], total[i], (float)correct[i] / (float)total[i] * 100.0f);
+					i++;
 				}
 				
-				Console.WriteLine("\nTEST RESULTS:\n\t{0} correct / {1} total = {2}% correct",
-				                  correct, total, (float)correct / (float)total * 100.0f);
+				Console.WriteLine("TEST RESULTS:\n\t{0} correct / {1} total = {2}% correct",
+				                  correct.Sum(), total.Sum(), (float)correct.Sum() / (float)total.Sum() * 100.0f);
 				break;
 				
 			case Command.PrintGestureFeatures:
 				var gest = new InputGesture(new LogFileLoader(filename));
-				foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
+				/*foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
-				}
+				}*/
 				foreach ( var f in Features.AllFeatures.ContinuousGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
 				}

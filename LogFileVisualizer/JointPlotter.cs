@@ -58,21 +58,27 @@ namespace LogFileVisualizer
 		
 		InputGesture mGesture;
 		string mJointName;
+		bool mPlotAngle;
 		
-		public JointPlotter(InputGesture g, string jointname)
+		public JointPlotter(InputGesture g, string jointname, bool angle)
 		{
 			mGesture = g;
 			mJointName = jointname;
+			mPlotAngle = angle;
 		}
 		
-		public void DisplayPlots()
+		public Form DisplayPlots()
 		{
-			var aplot = BuildAnglePlot();
-			var zf1 = new ZedGraphFigure(aplot);
-			zf1.Visible = true;
+			if ( mPlotAngle ) {
+				var aplot = BuildAnglePlot();
+				var zf1 = new ZedGraphFigure(aplot);
+				zf1.Visible = true;
+			}
 			
 			var pplot = BuildPositionPlot();
-			Application.Run(new ZedGraphFigure(pplot));
+			var zf2 = new ZedGraphFigure(pplot);
+			zf2.Visible = true;
+			return zf2;
 		}
 		
 		ZedGraphControl BuildAnglePlot()
