@@ -68,7 +68,7 @@ namespace FinalProject
 
 			switch ( c ) {
 			case Command.Train:
-				string[] trainingNames = {"high_kick", "punch", "throw", "clap"};
+				string[] trainingNames = {"high_kick", "punch", "throw", "clap", "jump", "flick_right"};
 				rec.Train(LoadTrainingData(trainingNames));
 				rec.SaveModel(model_filename);
 				System.Console.WriteLine("Saved trained model to {0}", model_filename);
