@@ -16,6 +16,15 @@ namespace FinalProject.Features
 		}
 	}
 	
+	public class HandsTogether : IFrameFeature {
+		public float QueryFrame(JointState js) {
+			if ( Math.Abs(js.Pos("right-palm").X - js.Pos("left-palm").X) < 0.1f )
+				return 1.0f;
+			else
+				return 0.0f;
+		}
+	}
+	
 	
 	
 	public class JointAmplitude : IGestureFeature {
@@ -110,26 +119,35 @@ namespace FinalProject.Features
 	}
 	
 	public class NumberCriticalPoints : IGestureFeature {
-		string JointName;
-		JointState.JointComponent JointComponent;
+		string JN;
+		JointState.JointComponent JC;
 		
 		public NumberCriticalPoints(string jn, JointState.JointComponent jc) {
-			JointName = jn;
-			JointComponent = jc;
+			JN = jn;
+			JC = jc;
 		}
 		public float QueryGesture(InputGesture ig) {
-			Func<JointState, float> f = x => x.Component(JointName, JointComponent);
+			Func<JointState, float> f = x => x.Component(JN, JC);
 			float min = ig.States.Min(f), max = ig.States.Max(f);
 			float center = (max + min) / 2.0f;
 			float dist_threshold = 0.5f;
 			
+			bool dir = (f(ig.States[1]) - f(ig.States[0])) > 0.0f;
 			var count = 0;
-			foreach ( var js in ig.States ) {
-				bool maxthres = (js.Component(JointName, JointComponent) - center) > (max - center) * dist_threshold;
-				bool minthres = (center - js.Component(JointName, JointComponent)) > (center - min) * dist_threshold;
+			var sinceLast = 100;
+			for ( int i = 1; i < ig.States.Count; i++ ) {
+				//bool maxthres = (js.Component(JN, JointComponent) - center) > (max - center) * dist_threshold;
+				//bool minthres = (center - js.Component(JN, JointComponent)) > (center - min) * dist_threshold;
+				bool newdir = (f(ig.States[i]) - f(ig.States[i-1])) > 0.0f;
+				if ( newdir != dir && sinceLast > 10 ) {
+					count++;
+					sinceLast = 0;
+				}
+				dir = newdir;
+				sinceLast++;
 			}
 			
-			return count;
+			return (float)count / (float)ig.States.Count;
 		}
 	}
 	
@@ -143,21 +161,26 @@ namespace FinalProject.Features
 		
 		static AllFeatures() {
 			GestureFeatures = new List<IGestureFeature> {
-				//new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
+				new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
 				
-				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
+				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
 				
 				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
 				
 				new NeckAmplitude(),
 				new ProportionFrames(new HighFoot()),
+				new ProportionFrames(new HandsTogether()),
 				
-				new NeutralDeviation("right-wrist", JointState.JointComponent.PosX),
+				//new NeutralDeviation("right-wrist", JointState.JointComponent.PosX),
 				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX)
 			};
+		}
+		
+		static public IEnumerable<float> GestureFeatureResults(InputGesture ig) {
+			return GestureFeatures.Select(x => x.QueryGesture(ig));
 		}
 	}
 }
