@@ -11,6 +11,10 @@ namespace FinalProject.Utility
 		public static char CompToChar(int ix) {
 			return (char)('X'+ix);
 		}
+		
+		static public void PrintMemoryUsage() {
+			Console.WriteLine("Memory usage: {0}MB", System.Diagnostics.Process.GetCurrentProcess().WorkingSet64 / (1024*1024));
+		}
 	}
 }
 

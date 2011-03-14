@@ -5,10 +5,10 @@ namespace FinalProject
 {
 	public class SingleFrameRecognizer : IRecognizer
 	{
-		List<Features.ISingleFrameFeature> mFeatures;
+		List<Features.IFrameFeature> mFeatures;
 		
 		public SingleFrameRecognizer() {
-			mFeatures = new List<Features.ISingleFrameFeature>() {
+			mFeatures = new List<Features.IFrameFeature>() {
 				new Features.HighFoot()
 			};
 		}
@@ -21,7 +21,7 @@ namespace FinalProject
 		
 		public RecognizerResult RecognizeSingleGesture(InputGesture g) {
 			foreach ( var js in g.States ) {
-				if ( mFeatures[0].QueryFrame(js) ) {
+				if ( mFeatures[0].QueryFrame(js) > 0.0f ) {
 					var res = RecognizerResult.Empty();
 					res.Gesture1 = "high_kick";
 					res.Confidence1 = 100.0f;

@@ -16,7 +16,7 @@ namespace FinalProject
 			
 			sw.Start();
 			for ( int i = 0; i < numiters; i++ ) {
-				foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
+				foreach ( var f in Features.AllFeatures.GestureFeatures ) {
 					f.QueryGesture(gest);
 				}
 			}
@@ -46,6 +46,7 @@ namespace FinalProject
 			}
 			
 			System.Console.WriteLine("Done loading training data");
+			Utility.Utility.PrintMemoryUsage();
 			return output;
 		}
 		
@@ -64,6 +65,7 @@ namespace FinalProject
 			}
 			
 			System.Console.WriteLine("Done loading test data");
+			Utility.Utility.PrintMemoryUsage();
 			return output;
 		}
 		
@@ -157,6 +159,7 @@ namespace FinalProject
 				
 				Console.WriteLine("TEST RESULTS:\n\t{0} correct / {1} total = {2}% correct",
 				                  correct.Sum(), total.Sum(), (float)correct.Sum() / (float)total.Sum() * 100.0f);
+				Utility.Utility.PrintMemoryUsage();
 				break;
 				
 			case Command.PrintGestureFeatures:
@@ -164,7 +167,7 @@ namespace FinalProject
 				/*foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
 				}*/
-				foreach ( var f in Features.AllFeatures.ContinuousGestureFeatures ) {
+				foreach ( var f in Features.AllFeatures.GestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
 				}
 				break;

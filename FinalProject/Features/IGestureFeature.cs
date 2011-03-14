@@ -1,7 +1,7 @@
 using System;
 namespace FinalProject
 {
-	public interface IContinuousGestureFeature
+	public interface IGestureFeature
 	{
 		float QueryGesture(InputGesture ig);
 	}

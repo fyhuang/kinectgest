@@ -37,8 +37,8 @@ namespace FinalProject
 			var results = new List<GestureWeight>();
 			foreach ( var kvp in mWeights ) {
 				GestureWeight gw = new GestureWeight(){name = kvp.Key};
-				for ( int i = 0; i < Features.AllFeatures.SingleGestureFeatures.Count; i++ ) {
-					bool fp = Features.AllFeatures.SingleGestureFeatures[i].QueryGesture(g);
+				for ( int i = 0; i < Features.AllFeatures.GestureFeatures.Count; i++ ) {
+					bool fp = Features.AllFeatures.GestureFeatures[i].QueryGesture(g);
 					if ( fp ) gw.weight += kvp.Value[i*2];
 					else gw.weight += kvp.Value[i*2+1];
 				}
@@ -47,7 +47,7 @@ namespace FinalProject
 			
 			results.Sort();
 			results.Reverse();
-			float norm = (float)Features.AllFeatures.SingleGestureFeatures.Count;
+			float norm = (float)Features.AllFeatures.GestureFeatures.Count;
 			return new RecognizerResult() {
 				Gesture1 = results[0].name, Confidence1 = results[0].weight / norm,
 				Gesture2 = results[1].name, Confidence2 = results[1].weight / norm,
@@ -59,12 +59,12 @@ namespace FinalProject
 		{
 			foreach ( var kvp in gestures ) {
 				Console.WriteLine("Training gesture \"{0}\" ({1} data instances)", kvp.Key, kvp.Value.Count);
-				float[] weights = new float[2*Features.AllFeatures.SingleGestureFeatures.Count];
+				float[] weights = new float[2*Features.AllFeatures.GestureFeatures.Count];
 				
 				// TODO: slow and ugly...
-				for ( int i = 0; i < Features.AllFeatures.SingleGestureFeatures.Count; i++ ) {
+				for ( int i = 0; i < Features.AllFeatures.GestureFeatures.Count; i++ ) {
 					foreach ( var ig in kvp.Value ) {
-						bool fp = Features.AllFeatures.SingleGestureFeatures[i].QueryGesture(ig);
+						bool fp = Features.AllFeatures.GestureFeatures[i].QueryGesture(ig);
 						if ( fp ) weights[i*2] += 1.0f;
 						else weights[i*2+1] += 1.0f;
 					}
