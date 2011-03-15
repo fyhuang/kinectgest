@@ -18,7 +18,7 @@ namespace FinalProject.Features
 	
 	public class HandsTogether : IFrameFeature {
 		public float QueryFrame(JointState js) {
-			if ( Math.Abs(js.Pos("right-palm").X - js.Pos("left-palm").X) < 0.1f )
+			if ((js.Pos("right-palm") - js.Pos("left-palm")).Length < 0.2f)
 				return 1.0f;
 			else
 				return 0.0f;
