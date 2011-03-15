@@ -21,7 +21,7 @@ namespace FinalProject
 			//string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 		}
 		
-		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool test, string format = "gestures/track_{0}_{1:00}.log") {
+		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format = "gestures/track_{0}_{1:00}.log") {
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
@@ -30,20 +30,24 @@ namespace FinalProject
 				Console.WriteLine("{0} has {1} instances", name, last);
 				
 				for ( int i = 0; i < last; i++ ) {
-					if ( (mCV.IsTraining(i, last) && test) ||
-					    (!mCV.IsTraining(i, last) && !test) ) continue;
+					if ( training ) {
+						if ( !mCV.IsTraining(i, last) ) continue;
+					}
+					else {
+						if ( mCV.IsTraining(i, last) ) continue;
+					}
 					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
 				}
 			}
 			
-			System.Console.WriteLine("Done loading training data");
-			Utility.Utility.PrintMemoryUsage();
+			//System.Console.WriteLine("Done loading training data");
+			//Utility.Utility.PrintMemoryUsage();
 			return output;
 		}
 		
 		IEnumerable<JointState> LoadFrames(string name)
 		{
-			return LoadData(new[]{"ns"}, false, "gestures/frames/{0}_{1:00}.log")
+			return LoadData(new[]{"ns"}, true, "gestures/frames/{0}_{1:00}.log")
 				.SelectMany(x => x.Value)
 				.SelectMany(x => x.States);
 		}
