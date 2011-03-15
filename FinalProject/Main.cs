@@ -89,8 +89,8 @@ namespace FinalProject
 			file.Close();
 		}
 		
-		enum Command { Train, TestSingle, TestRecognize, PrintGestureFeatures, BenchmarkRecognize,
-			CycleCrossValidation,
+		enum Command { Train, TestSingle, TestRecognize, PrintFeatures, BenchmarkRecognize,
+			CycleCV,
 			Help };
 		static public void Main(string[] args)
 		{
@@ -118,7 +118,8 @@ namespace FinalProject
 			string filename = "gestures/track_high_kick_01.log";
 			if ( args.Length > 1 ) filename = args[1];
 			
-			string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
+			//string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
+			string[] trainingNames = {"clap", "jump", "low_kick", "punch", "throw"};
 
 			switch ( c ) {
 			case Command.Train:
@@ -162,7 +163,7 @@ namespace FinalProject
 				Utility.Utility.PrintMemoryUsage();
 				break;
 				
-			case Command.PrintGestureFeatures:
+			case Command.PrintFeatures:
 				var gest = new InputGesture(new LogFileLoader(filename));
 				/*foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
@@ -176,8 +177,9 @@ namespace FinalProject
 				BenchmarkRecognize();
 				break;
 				
-			case Command.CycleCrossValidation:
+			case Command.CycleCV:
 				SaveCVIndex(cv_index+1);
+				Console.WriteLine("CV index now {0}", cv_index+1);
 				break;
 			}
 		}

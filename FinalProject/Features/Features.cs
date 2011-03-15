@@ -25,6 +25,15 @@ namespace FinalProject.Features
 		}
 	}
 	
+	public class RHPastNeck : IFrameFeature {
+		public float QueryFrame(JointState js) {
+			if (js.Pos("right-palm").X - js.Pos("neck").X < 0.0f)
+				return 1.0f;
+			else
+				return 0.0f;
+		}
+	}
+	
 	
 	
 	public class JointAmplitude : IGestureFeature {
@@ -136,11 +145,14 @@ namespace FinalProject.Features
 			var count = 0;
 			var sinceLast = 100;
 			for ( int i = 1; i < ig.States.Count; i++ ) {
-				//bool maxthres = (js.Component(JN, JointComponent) - center) > (max - center) * dist_threshold;
-				//bool minthres = (center - js.Component(JN, JointComponent)) > (center - min) * dist_threshold;
+				float maxthres = (max - center) * dist_threshold;
+				float minthres = (min - center) * dist_threshold;
 				bool newdir = (f(ig.States[i]) - f(ig.States[i-1])) > 0.0f;
 				if ( newdir != dir && sinceLast > 10 ) {
-					count++;
+					float relpos = f(ig.States[i]) - center;
+					if ( relpos > maxthres || relpos < minthres ) {
+						count++;
+					}
 					sinceLast = 0;
 				}
 				dir = newdir;
@@ -151,9 +163,63 @@ namespace FinalProject.Features
 		}
 	}
 	
+	public class DerivativeSum : IGestureFeature {
+		string JN;
+		JointState.JointComponent JC;
+		Func<JointState, bool> Cond;
+		
+		public DerivativeSum(string jn, JointState.JointComponent jc, Func<JointState, bool> condition) {
+			JN = jn;
+			JC = jc;
+			Cond = condition;
+		}
+		public float QueryGesture(InputGesture ig) {
+			Func<JointState, float> f = x => x.Component(JN, JC);
+			float count = 0.0f;
+			float sum = 0.0f;
+			for ( int i = 1; i < ig.States.Count; i++ ) {
+				var state = ig.States[i];
+				if ( Cond(state) ) {
+					sum += f(state) - f(ig.States[i-1]);
+					count += 1.0f;
+				}
+			}
+			
+			return (count == 0.0f) ? 0.0f : sum / count;
+		}
+	}
+	
 	// TODO:  measure divergence between X direction and Z direction (right flick)
 	// Normalized by slope, # frames
-	// TODO: measure distance between left hand and right hand
+	public class AxisCoincidence : IGestureFeature {
+		string JN;
+		JointState.JointComponent JA;
+		JointState.JointComponent JB;
+		
+		public AxisCoincidence(string jn, JointState.JointComponent ja, JointState.JointComponent jb) {
+			JN = jn;
+			JA = ja;
+			JB = jb;
+		}
+		public float QueryGesture(InputGesture ig) {
+			Func<JointState, float> f1 = x => x.Component(JN, JA),
+									f2 = x => x.Component(JN, JB);
+			
+			double sum = 0.0f;
+			for ( int i = 1; i < ig.States.Count; i++ ) {
+				var state = ig.States[i];
+				var pstate = ig.States[i-1];
+				if ( f1(state) - f1(pstate) > 0.0f ) {
+					sum += f2(state) - f2(pstate);
+				}
+				else {
+					sum -= f2(state) - f2(pstate);
+				}
+			}
+			
+			return (float)(sum * 100.0) / (float)ig.States.Count;
+		}
+	}
 	
 	
 	static public class AllFeatures {
@@ -161,21 +227,25 @@ namespace FinalProject.Features
 		
 		static AllFeatures() {
 			GestureFeatures = new List<IGestureFeature> {
-				new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
+				//new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
 				
-				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
+				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
 				
 				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
+				new ProportionChange("right-foot", JointState.JointComponent.Angle),
 				
 				new NeckAmplitude(),
 				new ProportionFrames(new HighFoot()),
 				new ProportionFrames(new HandsTogether()),
+				new ProportionFrames(new RHPastNeck()),
 				
-				//new NeutralDeviation("right-wrist", JointState.JointComponent.PosX),
-				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX)
+				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
+				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),
+				new DerivativeSum("right-palm", JointState.JointComponent.PosX, x => x.Component("right-palm", JointState.JointComponent.PosZ) > 0.15f),
+				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)
 			};
 		}
 		

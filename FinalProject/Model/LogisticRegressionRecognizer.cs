@@ -15,12 +15,16 @@ namespace FinalProject
 		Dictionary<string, List<double>> mWeights;
 		double mStepSize;
 		double mConvergenceThreshold;
+		double mAlpha;
 		
 		public LogisticRegressionRecognizer()
 		{
 			mWeights = new Dictionary<string, List<double>>();
 			mStepSize = 0.05;
 			mConvergenceThreshold = 0.1;
+			//mStepSize = 0.1; // For profiling
+			//mConvergenceThreshold = 2.0;
+			mAlpha = 0.5f;
 		}
 		
 		public string[] Gestures {
@@ -45,11 +49,11 @@ namespace FinalProject
 			foreach ( var kvp in mWeights ) {
 				GestureWeight gw = new GestureWeight(){name = kvp.Key};
 				for ( int i = 0; i < features.Count; i++ ) {
-					double fres = features[i].QueryGesture(g);
+					float fres = features[i].QueryGesture(g);
 					gw.weight += kvp.Value[i] * fres;
 				}
 				gw.weight += kvp.Value[features.Count];
-				gw.weight = 1.0f / (1.0f + Math.Exp(-gw.weight));
+				gw.weight = Sigmoid(gw.weight);
 				results.Add(gw);
 			}
 			
@@ -66,20 +70,18 @@ namespace FinalProject
 		}
 		
 		double _Sigmoid(List<double> weights, float[] feature_results) {
-			double sum = weights.Zip(feature_results, (x, y) => x * y).Sum();
+			double sum = 0.0f;
+			for ( int i = 0; i < weights.Count; i++ ) {
+				sum += weights[i] * feature_results[i];
+			}
 			return Sigmoid(sum);
 		}
 		
-		double _Diff(List<double> oldWeights, List<double> weights) {
-			double result = 0.0;
-			for ( int i = 0; i < oldWeights.Count; i++ ) {
-				result += Math.Abs(oldWeights[i] - weights[i]);
-			}
-			return result;
-		}
-		
 		bool _Converged(List<double> oldWeights, List<double> weights, double threshold) {
-			return !oldWeights.Zip(weights, (x,y) => Math.Abs(x - y)).Any(x => x > threshold);
+			for ( int i = 0; i < oldWeights.Count; i++ ) {
+				if ( Math.Abs(oldWeights[i] - weights[i]) > threshold ) return false;
+			}
+			return true;
 		}
 		
 		/// <returns>
@@ -90,7 +92,7 @@ namespace FinalProject
 		                      string class_name,
 		                      int max_iters) {
 			List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
-			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 1.0).ToList(); // The features.Count-indexed value is the "intercept"
+			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
 			var oldWeights = new List<double>(features.Count + 1);
 			
 			var sw = new System.Diagnostics.Stopwatch(); sw.Start();
@@ -98,8 +100,7 @@ namespace FinalProject
 			bool converged = true;
 			//float diff = 0.0f;
 			do {
-				if (max_iters > 0 && num_iters > 10 * max_iters ||
-				    max_iters == 0 && num_iters > 10000) {
+				if (num_iters > Math.Max(max_iters * 10, 6000)) {
 					Console.WriteLine("WARNING: {0} not converging", class_name);
 					converged = false;
 					break;
@@ -107,6 +108,7 @@ namespace FinalProject
 				
 				oldWeights.Clear();
 				oldWeights.AddRange(mWeights[class_name]);
+				double wsum = oldWeights.Sum();
 				
 				for ( int i = 0; i < features.Count + 1; i++ ) {
 					var error_sum = 0.0;
@@ -116,6 +118,7 @@ namespace FinalProject
 					           	     _Sigmoid(mWeights[class_name], feature_results[j]) ) *
 							feature_results[j][i];
 					}
+					error_sum -= wsum * mAlpha;
 					mWeights[class_name][i] += mStepSize * error_sum;
 				}
 				
@@ -156,6 +159,7 @@ namespace FinalProject
 				                                  allgestures,
 				                                  kvp.Key,
 				                                  max_iters);
+				max_iters = Math.Max(num_iters, max_iters);
 			}
 		}
 
