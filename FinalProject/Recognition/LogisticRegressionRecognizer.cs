@@ -137,7 +137,6 @@ namespace FinalProject
 		
 		public void Train (IDictionary<string, IList<InputGesture>> gestures)
 		{
-			List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
 			var allgestures = new List<LabeledGesture>();
 			foreach ( var kvp in gestures ) {
 				foreach ( var instance in kvp.Value ) {
@@ -170,6 +169,8 @@ namespace FinalProject
 			formatter.Serialize(stream, this.GetType());
 			formatter.Serialize(stream, mWeights);
 			stream.Close();
+			
+			Console.WriteLine("Saved trained model to {0}", filename);
 		}
 
 		public void LoadModel (string filename)
@@ -180,6 +181,8 @@ namespace FinalProject
 			if ( !mtype.Equals(this.GetType()) ) throw new InvalidDataException();
 			mWeights = (Dictionary<string, List<double>>)formatter.Deserialize(stream);
 			stream.Close();
+			
+			Console.WriteLine("Loaded model from {0}", filename);
 		}
 
 		public void ClearHistory ()

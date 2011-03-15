@@ -4,13 +4,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 
+using System.Runtime.Serialization;
+
 using OpenTK;
 
 using FinalProject.Utility;
 
 namespace FinalProject
 {
-	public class JointState
+	[Serializable()]
+	public class JointState : ISerializable
 	{
 		static public Dictionary<string, int> NamesToJoints;
 		static public List<int> JointParents;
@@ -70,6 +73,14 @@ namespace FinalProject
 		/// </summary>
 		public float[] RelativeAngles;
 		
+		public JointState() {
+		}
+		
+		public JointState(SerializationInfo si, StreamingContext sc) {
+			Timestamp = (float)si.GetValue("Timestamp", typeof(int));
+			NeckPos = (Vector3)si.GetValue("NeckPos", typeof(Vector3));
+		}
+		
 		public Vector3 Pos(string name)
 		{
 			Debug.Assert(NamesToJoints.ContainsKey(name));
@@ -93,6 +104,17 @@ namespace FinalProject
 			}
 		}
 		
+		
+		public RawJointState ToRawJointState() {
+			var output = new RawJointState();
+			output.Timestamp = Timestamp;
+			output.Joints = new Vector3[RelativeJoints.Length];
+			output.Joints[0] = NeckPos;
+			for ( int i = 1; i < output.Joints.Length; i++ ) {
+				output.Joints[i] = NeckPos + RelativeJoints[i];
+			}
+			return output;
+		}
 		
 		static public JointState FromRawJointState(RawJointState rjs)
 		{
@@ -123,6 +145,15 @@ namespace FinalProject
 			rjs.RelativeJoints.CopyTo(rel.RelativeJoints, 0);
 			return rel;
 		}
+	
+
+		#region ISerializable implementation
+		// TODO: serializable
+		public void GetObjectData (SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("Timestamp", Timestamp);
+		}
+		#endregion
 	}
 }
 

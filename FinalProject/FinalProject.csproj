@@ -64,12 +64,18 @@
     <Compile Include="InputGesture.cs" />
     <Compile Include="IRecognizer.cs" />
     <Compile Include="Utility.cs" />
-    <Compile Include="Features\BayesianModel.cs" />
-    <Compile Include="Features\Features.cs" />
-    <Compile Include="Model\SingleFrameRecognizer.cs" />
-    <Compile Include="Model\LogisticRegressionRecognizer.cs" />
     <Compile Include="Features\IGestureFeature.cs" />
     <Compile Include="Features\IFrameFeature.cs" />
+    <Compile Include="Features\GestureFeatures.cs" />
+    <Compile Include="Features\FrameFeatures.cs" />
+    <Compile Include="Features\AllFeatures.cs" />
+    <Compile Include="ISegmenter.cs" />
+    <Compile Include="CrossValidation.cs" />
+    <Compile Include="Benchmarks.cs" />
+    <Compile Include="Recognition\SingleFrameRecognizer.cs" />
+    <Compile Include="Recognition\LogisticRegressionRecognizer.cs" />
+    <Compile Include="Recognition\DumbSegmenter.cs" />
+    <Compile Include="Features\LearnedFrameFeatures.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
@@ -102,6 +108,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Model\AggregateFeatureRecognizer.cs" />
+    <None Include="Recognition\AggregateFeatureRecognizer.cs" />
   </ItemGroup>
 </Project>

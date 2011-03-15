@@ -7,35 +7,6 @@ using FinalProject.Utility;
 
 namespace FinalProject.Features
 {
-	public class HighFoot : IFrameFeature {
-		public float QueryFrame(JointState js) {
-			if ( js.Pos("right-foot").Y >= -0.2f )
-				return 1.0f;
-			else
-				return 0.0f;
-		}
-	}
-	
-	public class HandsTogether : IFrameFeature {
-		public float QueryFrame(JointState js) {
-			if ((js.Pos("right-palm") - js.Pos("left-palm")).Length < 0.2f)
-				return 1.0f;
-			else
-				return 0.0f;
-		}
-	}
-	
-	public class RHPastNeck : IFrameFeature {
-		public float QueryFrame(JointState js) {
-			if (js.Pos("right-palm").X - js.Pos("neck").X < 0.0f)
-				return 1.0f;
-			else
-				return 0.0f;
-		}
-	}
-	
-	
-	
 	public class JointAmplitude : IGestureFeature {
 		string JointName;
 		JointState.JointComponent JointComponent;
@@ -218,39 +189,6 @@ namespace FinalProject.Features
 			}
 			
 			return (float)(sum * 100.0) / (float)ig.States.Count;
-		}
-	}
-	
-	
-	static public class AllFeatures {
-		static public List<IGestureFeature> GestureFeatures;
-		
-		static AllFeatures() {
-			GestureFeatures = new List<IGestureFeature> {
-				//new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
-				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
-				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
-				
-				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
-				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
-				
-				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
-				new ProportionChange("right-foot", JointState.JointComponent.Angle),
-				
-				new NeckAmplitude(),
-				new ProportionFrames(new HighFoot()),
-				new ProportionFrames(new HandsTogether()),
-				new ProportionFrames(new RHPastNeck()),
-				
-				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
-				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),
-				new DerivativeSum("right-palm", JointState.JointComponent.PosX, x => x.Component("right-palm", JointState.JointComponent.PosZ) > 0.15f),
-				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)
-			};
-		}
-		
-		static public IEnumerable<float> GestureFeatureResults(InputGesture ig) {
-			return GestureFeatures.Select(x => x.QueryGesture(ig));
 		}
 	}
 }

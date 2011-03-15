@@ -107,6 +107,12 @@ namespace LogFileVisualizer
 			else if ( mTime > mGesture.TotalTime ) mTime = mGesture.TotalTime;
 			
 			mGesture.InterpolateState(mTime, ref mCurrState);
+			
+			if (Keyboard[Key.S]) {
+				// Output the current frame
+				var rjs = mCurrState.ToRawJointState();
+				Console.WriteLine(rjs.ToString());
+			}
         }
 		
 		protected override void OnRenderFrame(FrameEventArgs e)

@@ -44,9 +44,11 @@ namespace FinalProject
 		{
 			if ( time <= 0.0f ) {
 				States[0].RelativeJoints.CopyTo(state.RelativeJoints, 0);
+				state.Timestamp = States[0].Timestamp;
 			}
 			else if ( time >= States[States.Count-1].Timestamp - StartTime ) {
 				States[States.Count-1].RelativeJoints.CopyTo(state.RelativeJoints, 0);
+				state.Timestamp = States[States.Count-1].Timestamp;
 			}
 			else {
 				int state1idx = States.FindLastIndex(x => ((x.Timestamp - StartTime) <= time));
@@ -59,6 +61,7 @@ namespace FinalProject
 				for ( int i = 0; i < state.RelativeJoints.Length; i++ ) {
 					state.RelativeJoints[i] = weight1 * state1.RelativeJoints[i] + weight2 * state2.RelativeJoints[i];
 				}
+				state.Timestamp = weight1 * state1.Timestamp + weight2 * state2.Timestamp;
 			}
 		}
 		

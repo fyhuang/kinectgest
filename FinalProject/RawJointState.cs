@@ -1,9 +1,10 @@
 using System;
+using System.Text;
 using OpenTK;
 
 namespace FinalProject
 {
-	public struct RawJointState
+	public class RawJointState
 	{
 		public float Timestamp { get; set; }
 		public Vector3[] Joints;
@@ -38,6 +39,16 @@ namespace FinalProject
 			box.Min = min;
 			box.Max = max;
 			return box;
+		}
+		
+		public override string ToString ()
+		{
+			var sb = new StringBuilder();
+			sb.AppendFormat("{0} ", Timestamp);
+			foreach ( var j in Joints ) {
+				sb.AppendFormat("{0} {1} {2} ", j.X, j.Y, j.Z);
+			}
+			return sb.ToString();
 		}
 	}
 }

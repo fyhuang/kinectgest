@@ -8,39 +8,30 @@ namespace FinalProject
 {
 	public class Recognizer
 	{
-		static void BenchmarkRecognize()
-		{
-			var sw = new Stopwatch();
-			var gest = new InputGesture(new LogFileLoader("gestures/track_high_kick_01.log"));
-			var numiters = 1000;
-			
-			sw.Start();
-			for ( int i = 0; i < numiters; i++ ) {
-				foreach ( var f in Features.AllFeatures.GestureFeatures ) {
-					f.QueryGesture(gest);
-				}
-			}
-			sw.Stop();
-			
-			Console.WriteLine("Elapsed time ({0} iters): {1}", numiters, sw.Elapsed);
-			Console.WriteLine("Gestures per second: {0}", 1000.0f / (sw.ElapsedMilliseconds / (float)numiters));
+		IRecognizer mRec;
+		string mRecFilename;
+		ISegmenter mSeg;
+		string mSegFilename;
+		
+		CrossValidation mCV;
+		string[] mGestureNames;
+		
+		public Recognizer() {
+			mGestureNames = new string[] {"clap", "jump", "low_kick", "punch", "throw"};
+			//string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 		}
 		
-		static bool IsTraining(int ix, int cvix, int max) {
-			if ( (ix + cvix) % (max / 4 + 1) == 0 ) return false;
-			return true;
-		}
-		
-		static IDictionary<string, IList<InputGesture>> LoadTrainingData(int cvix, string[] names) {
+		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool test, string format = "gestures/track_{0}_{1:00}.log") {
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
-				var fnames = LogFileLoader.LogFilenames(name).ToList();
+				var fnames = LogFileLoader.LogFilenames(name, format).ToList();
 				int last = fnames.Count;
 				Console.WriteLine("{0} has {1} instances", name, last);
 				
 				for ( int i = 0; i < last; i++ ) {
-					if ( !IsTraining(i, cvix, last) ) continue;
+					if ( (mCV.IsTraining(i, last) && test) ||
+					    (!mCV.IsTraining(i, last) && !test) ) continue;
 					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
 				}
 			}
@@ -50,49 +41,35 @@ namespace FinalProject
 			return output;
 		}
 		
-		static IDictionary<string, IList<InputGesture>> LoadTestData(int cvix, string[] names) {
-			var output = new Dictionary<string, IList<InputGesture>>();
-			foreach ( var name in names ) {
-				output.Add(name, new List<InputGesture>());
-				var fnames = LogFileLoader.LogFilenames(name).ToList();
-				int last = fnames.Count;
-				Console.WriteLine("{0} has {1} instances", name, last);
-				
-				for ( int i = 0; i < last; i++ ) {
-					if ( IsTraining(i, cvix, last) ) continue;
-					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
-				}
-			}
+		IEnumerable<JointState> LoadFrames(string name)
+		{
+			return LoadData(new[]{"ns"}, false, "gestures/frames/{0}_{1:00}.log")
+				.SelectMany(x => x.Value)
+				.SelectMany(x => x.States);
+		}
+		
+		void LoadModels() {
+			Console.WriteLine("Using cross-validation index {0}", mCV.Index);
 			
-			System.Console.WriteLine("Done loading test data");
-			Utility.Utility.PrintMemoryUsage();
-			return output;
+			mRec.LoadModel(mRecFilename);
+			
+			Features.AllFeatures.LoadModels();
 		}
 		
-		static int GetCVIndex() {
-			var file = new StreamReader(File.Open("cvindex.txt", FileMode.OpenOrCreate));
-			try {
-				int ix = int.Parse(file.ReadToEnd());
-				return ix;
-			}
-			catch ( Exception ) {
-				return 0;
-			}
-			finally {
-				file.Close();
-			}
+		void Train() {
+			Console.WriteLine("Using cross-validation index {0}", mCV.Index);
+			
+			Console.WriteLine("Training recognizer");
+			mRec.Train(LoadData(mGestureNames, true));
+			mRec.SaveModel(mRecFilename);
+			
+			Features.AllFeatures.LearnedFrameFeatures["NeutralStance"].Train(LoadFrames("ns"));
+			Features.AllFeatures.SaveModels();
 		}
 		
-		static void SaveCVIndex(int ix) {
-			var file = new StreamWriter(File.Open("cvindex.txt", FileMode.Create));
-			file.Write(ix);
-			file.Close();
-		}
-		
-		enum Command { Train, TestSingle, TestRecognize, PrintFeatures, BenchmarkRecognize,
-			CycleCV,
-			Help };
-		static public void Main(string[] args)
+		enum Command { Train, TestSingle, TestRecognize, PrintFeatures, TestRealtime, RunRealtime,
+			BenchmarkRecognize, CycleCV, Help };
+		public void Run(string[] args)
 		{
 			Command c = Recognizer.Command.Help;
 			if ( args.Length > 0 ) {
@@ -105,41 +82,36 @@ namespace FinalProject
 			}
 			
 			// For CV
-			int cv_index = GetCVIndex();
+			mCV = new CrossValidation("cvindex.txt");
 			
 			////////////////////
-			// CHANGE THIS LINE TO USE A NEW RECOGNIZER
+			// CHANGE THESE LINES TO SWAP MODELS
 			////////////////////
-			IRecognizer rec = new LogisticRegressionRecognizer();
-			Console.WriteLine("Using recognizer {0}", rec.GetType().ToString());
-			string model_filename = rec.GetType().ToString() + ".model";
+			mRec = new LogisticRegressionRecognizer();
+			mSeg = new DumbSegmenter();
+			
+			Console.WriteLine("Using recognizer {0}", mRec.GetType().ToString());
+			Console.WriteLine("Using segmenter {0}", mSeg.GetType().ToString());
+			mRecFilename = "models/" + mRec.GetType().ToString() + ".rec.model";
+			mSegFilename = "models/" + mSeg.GetType().ToString() + ".seg.model";
 			
 			
 			string filename = "gestures/track_high_kick_01.log";
 			if ( args.Length > 1 ) filename = args[1];
 			
-			//string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
-			string[] trainingNames = {"clap", "jump", "low_kick", "punch", "throw"};
-
+			InputGesture gest;
 			switch ( c ) {
 			case Command.Train:
-				Console.WriteLine("Using cross-validation index {0}", cv_index);
-				rec.Train(LoadTrainingData(cv_index, trainingNames));
-				rec.SaveModel(model_filename);
-				System.Console.WriteLine("Saved trained model to {0}", model_filename);
+				Train();
 				break;
 			case Command.TestSingle:
-				rec.LoadModel(model_filename);
-				Console.WriteLine("Loaded model from {0}", model_filename);
-				var result = rec.RecognizeSingleGesture(new InputGesture(new LogFileLoader(filename)));
+				LoadModels();
+				var result = mRec.RecognizeSingleGesture(new InputGesture(new LogFileLoader(filename)));
 				Console.WriteLine(result.ToString());
 				break;
 			case Command.TestRecognize:
-				Console.WriteLine("Using cross-validation index {0}", cv_index);
-				rec.LoadModel(model_filename);
-				Console.WriteLine("Loaded model from {0}", model_filename);
-				
-				var test_gestures = LoadTestData(cv_index, trainingNames);
+				LoadModels();
+				var test_gestures = LoadData(mGestureNames, false);
 				int[] total = Enumerable.Range(0, test_gestures.Count).Select(x => 0).ToArray(),
 					  correct = Enumerable.Range(0, test_gestures.Count).Select(x => 0).ToArray();
 				int i = 0;
@@ -147,7 +119,7 @@ namespace FinalProject
 				foreach ( var gn in test_gestures ) {
 					foreach ( var tg in gn.Value ) {
 						total[i]++;
-						var result2 = rec.RecognizeSingleGesture(tg);
+						var result2 = mRec.RecognizeSingleGesture(tg);
 						if ( result2.Gesture1 == gn.Key ) {
 							correct[i]++;
 						}
@@ -163,8 +135,15 @@ namespace FinalProject
 				Utility.Utility.PrintMemoryUsage();
 				break;
 				
+			case Command.TestRealtime:
+				LoadModels();
+				gest = new InputGesture(new LogFileLoader(filename));
+				foreach ( var frame in gest.States ) {
+				}
+				break;
+				
 			case Command.PrintFeatures:
-				var gest = new InputGesture(new LogFileLoader(filename));
+				gest = new InputGesture(new LogFileLoader(filename));
 				/*foreach ( var f in Features.AllFeatures.SingleGestureFeatures ) {
 					Console.WriteLine("{0}: {1}", f.ToString(), f.QueryGesture(gest));
 				}*/
@@ -174,14 +153,21 @@ namespace FinalProject
 				break;
 				
 			case Command.BenchmarkRecognize:
-				BenchmarkRecognize();
+				Benchmarks.BenchmarkRecognize();
 				break;
 				
 			case Command.CycleCV:
-				SaveCVIndex(cv_index+1);
-				Console.WriteLine("CV index now {0}", cv_index+1);
+				mCV.Incr();
+				mCV.Save();
 				break;
 			}
+		}
+		
+		
+		static public void Main(string[] args)
+		{
+			var r = new Recognizer();
+			r.Run(args);
 		}
 	}
 }
