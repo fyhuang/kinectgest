@@ -53,7 +53,7 @@ namespace FinalProject
 					gw.weight += kvp.Value[i] * fres;
 				}
 				gw.weight += kvp.Value[features.Count];
-				gw.weight = Sigmoid(gw.weight);
+				gw.weight = Utility.Sigmoid(gw.weight);
 				results.Add(gw);
 			}
 			
@@ -65,16 +65,12 @@ namespace FinalProject
 			};
 		}
 		
-		double Sigmoid(double input) {
-			return 1.0 / (1.0 + Math.Exp(-input));
-		}
-		
 		double _Sigmoid(List<double> weights, float[] feature_results) {
 			double sum = 0.0f;
 			for ( int i = 0; i < weights.Count; i++ ) {
 				sum += weights[i] * feature_results[i];
 			}
-			return Sigmoid(sum);
+			return Utility.Sigmoid(sum);
 		}
 		
 		bool _Converged(List<double> oldWeights, List<double> weights, double threshold) {

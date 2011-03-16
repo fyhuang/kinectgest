@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 
 using FinalProject;
-using FinalProject.Utility;
 
 namespace FinalProject.Features
 {
@@ -200,6 +199,17 @@ namespace FinalProject.Features
 		}
 		public float QueryGesture(InputGesture ig) {
 			return ig.States.Select(x => (x.Pos(JN1) - x.Pos(JN2)).LengthFast).Min();
+		}
+	}
+	
+	public class MaxDistance : IGestureFeature {
+		string JN1, JN2;
+		public MaxDistance(string j1, string j2) {
+			JN1 = j1;
+			JN2 = j2;
+		}
+		public float QueryGesture(InputGesture ig) {
+			return ig.States.Select(x => (x.Pos(JN1) - x.Pos(JN2)).LengthFast).Max();
 		}
 	}
 }

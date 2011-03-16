@@ -28,7 +28,7 @@ namespace FinalProject
 		
 		bool _IsNeutralStance(JointState js) {
 			// TODO: punch stance
-			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > 0.4f;
+			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > 0.7f;
 		}
 		
 		void _CheckIfSegmented() {

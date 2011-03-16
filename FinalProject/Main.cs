@@ -46,7 +46,7 @@ namespace FinalProject
 			}
 			
 			//System.Console.WriteLine("Done loading training data");
-			Utility.Utility.PrintMemoryUsage();
+			Utility.PrintMemoryUsage();
 			return output;
 		}
 		
@@ -148,7 +148,7 @@ namespace FinalProject
 				
 				Console.WriteLine("TEST RESULTS:\n\t{0} correct / {1} total = {2}% correct",
 				                  correct.Sum(), total.Sum(), (float)correct.Sum() / (float)total.Sum() * 100.0f);
-				Utility.Utility.PrintMemoryUsage();
+				Utility.PrintMemoryUsage();
 				break;
 				
 			case Command.TestRealtime:

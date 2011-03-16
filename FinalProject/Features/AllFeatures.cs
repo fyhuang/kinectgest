@@ -3,7 +3,6 @@ using System.Linq;
 using System.Collections.Generic;
 
 using FinalProject;
-using FinalProject.Utility;
 
 namespace FinalProject.Features
 {
@@ -25,6 +24,7 @@ namespace FinalProject.Features
 				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
 				new ProportionChange("right-foot", JointState.JointComponent.Angle),
 				new MinDistance("left-palm", "right-palm"),
+				new MaxDistance("left-palm", "right-palm"),
 				
 				new NeckAmplitude(),
 				new ProportionFrames(new HighFoot()),

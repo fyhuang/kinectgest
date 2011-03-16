@@ -8,8 +8,6 @@ using System.Runtime.Serialization;
 
 using OpenTK;
 
-using FinalProject.Utility;
-
 namespace FinalProject
 {
 	[Serializable()]
