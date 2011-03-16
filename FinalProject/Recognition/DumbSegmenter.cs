@@ -28,23 +28,32 @@ namespace FinalProject
 		
 		bool _IsNeutralStance(JointState js) {
 			// TODO: punch stance
-			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > 0.7f;
+			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > 0.4f;
+		}
+		
+		void _CheckIfSegmented() {
+			if ( mCurrSegmentSize > _minSegmentSize ) {
+				Console.WriteLine("Segmented gesture");
+				GestureSegmented(this, null);
+			}
 		}
 
 		public void AddState (JointState js) {
 			if ( _IsNeutralStance(js) ) {
-				Console.WriteLine("Neutral");
-				if ( mCurrSegmentSize > _minSegmentSize ) {
-					GestureSegmented(this, null);
-				}
+				_CheckIfSegmented();
 				if ( mCurrSegmentSize > 0 ) {
 					LastGesture = new InputGesture(null);
 				}
+				mCurrSegmentSize = 0;
 			}
 			else {
 				LastGesture.AddJointState(js);
 				mCurrSegmentSize++;
 			}
+		}
+		
+		public void Finish() {
+			_CheckIfSegmented();
 		}
 	}
 }

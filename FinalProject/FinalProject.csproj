@@ -76,6 +76,7 @@
     <Compile Include="Recognition\LogisticRegressionRecognizer.cs" />
     <Compile Include="Recognition\DumbSegmenter.cs" />
     <Compile Include="Features\LearnedFrameFeatures.cs" />
+    <Compile Include="GUI\JointVisualizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
@@ -89,6 +90,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Learning\" />
+    <Folder Include="GUI\" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

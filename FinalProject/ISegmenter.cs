@@ -7,5 +7,6 @@ namespace FinalProject
 		InputGesture LastGesture { get; }
 		
 		void AddState(JointState js);
+		void Finish();
 	}
 }

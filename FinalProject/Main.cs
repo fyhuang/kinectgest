@@ -16,9 +16,11 @@ namespace FinalProject
 		CrossValidation mCV;
 		string[] mGestureNames;
 		
+		JointVisualizer mVisWindow;
+		
 		public Recognizer() {
-			mGestureNames = new string[] {"clap", "flick_left", "flick_right", "jump", "low_kick", "punch", "throw"};
-			//mGestureNames = new string[] {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
+			//mGestureNames = new string[] {"clap", "flick_left", "flick_right", "jump", "low_kick", "punch", "throw"};
+			mGestureNames = new string[] {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 		}
 		
 		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training) {
@@ -53,6 +55,13 @@ namespace FinalProject
 			return LoadData(new[]{"ns"}, true, "gestures/frames/{0}_{1:00}.log")
 				.SelectMany(x => x.Value)
 				.SelectMany(x => x.States);
+		}
+		
+		void StartVisualize() {
+			lock ( this ) {
+				mVisWindow = new JointVisualizer();
+			}
+			mVisWindow.Run();
 		}
 		
 		void LoadModels() {
@@ -149,15 +158,31 @@ namespace FinalProject
 					var segm = ((ISegmenter)sender).LastGesture;
 					var recres = mRec.RecognizeSingleGesture(segm);
 					if ( recres.Confidence1 > 0.5f ) {
-						Console.WriteLine(result.Gesture1);
+						Console.WriteLine("Recognized gesture:\n{0}", recres.ToString());
 					}
 					else {
 						Console.WriteLine("Inconclusive");
 					}
 				};
+				
+				var visthread = new System.Threading.Thread(new System.Threading.ThreadStart(this.StartVisualize));
+				visthread.Start();
+				while ( true ) { // Wait for window to get created
+					lock ( this ) {
+						if ( mVisWindow != null ) break;
+					}
+				}
+				
+				float lastTime = gest.States[0].Timestamp;
 				foreach ( var frame in gest.States ) {
 					mSeg.AddState(frame);
+					mVisWindow.CurrState = frame;
+					System.Threading.Thread.Sleep((int)((frame.Timestamp - lastTime) * 750.0f));
+					lastTime = frame.Timestamp;
 				}
+				mSeg.Finish();
+				
+				visthread.Abort();
 				break;
 				
 			case Command.PrintFeatures:
