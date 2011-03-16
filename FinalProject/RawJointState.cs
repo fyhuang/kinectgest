@@ -16,13 +16,19 @@ namespace FinalProject
 			var rjs = new RawJointState();
 			rjs.Joints = new Vector3[num];
 			
-			rjs.Timestamp = float.Parse(words[0]);
-			for ( int i = 0; i < num; i++ ) {
-				int ri = (i*3) + 1;
-				
-				rjs.Joints[i].X = float.Parse(words[ri]);
-				rjs.Joints[i].Y = float.Parse(words[ri+1]);
-				rjs.Joints[i].Z = float.Parse(words[ri+2]);
+			try {
+				rjs.Timestamp = float.Parse(words[0]);
+				for ( int i = 0; i < num; i++ ) {
+					int ri = (i*3) + 1;
+					
+					rjs.Joints[i].X = float.Parse(words[ri]);
+					rjs.Joints[i].Y = float.Parse(words[ri+1]);
+					rjs.Joints[i].Z = float.Parse(words[ri+2]);
+				}
+			}
+			catch ( FormatException ) {
+				Console.WriteLine("Input line not properly formatted: {0}", line);
+				return null;
 			}
 			
 			return rjs;

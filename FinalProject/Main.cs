@@ -24,9 +24,9 @@ namespace FinalProject
 		}
 		
 		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training) {
-			return LoadData(names, training, "gestures/track_{0}_{1:00}.log");
+			return LoadData(names, training, "gestures/track_{0}_{1:00}.log", true);
 		}
-		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format) {
+		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format, bool cv) {
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
@@ -35,11 +35,13 @@ namespace FinalProject
 				Console.WriteLine("{0} has {1} instances", name, last);
 				
 				for ( int i = 0; i < last; i++ ) {
-					if ( training ) {
-						if ( !mCV.IsTraining(i, last) ) continue;
-					}
-					else {
-						if ( mCV.IsTraining(i, last) ) continue;
+					if ( cv ) {
+						if ( training ) {
+							if ( !mCV.IsTraining(i, last) ) continue;
+						}
+						else {
+							if ( mCV.IsTraining(i, last) ) continue;
+						}
 					}
 					output[name].Add(new InputGesture(new LogFileLoader(fnames[i])));
 				}
@@ -52,7 +54,7 @@ namespace FinalProject
 		
 		IEnumerable<JointState> LoadFrames(string name)
 		{
-			return LoadData(new[]{"ns"}, true, "gestures/frames/{0}_{1:00}.log")
+			return LoadData(new[]{"ns"}, true, "gestures/frames/{0}_{1:00}.log", false)
 				.SelectMany(x => x.Value)
 				.SelectMany(x => x.States);
 		}
@@ -75,9 +77,9 @@ namespace FinalProject
 		void Train() {
 			Console.WriteLine("Using cross-validation index {0}", mCV.Index);
 			
-			Console.WriteLine("Training recognizer");
+			/*Console.WriteLine("Training recognizer");
 			mRec.Train(LoadData(mGestureNames, true));
-			mRec.SaveModel(mRecFilename);
+			mRec.SaveModel(mRecFilename);*/
 			
 			Features.AllFeatures.LearnedFrameFeatures["NeutralStance"].Train(LoadFrames("ns"));
 			Features.AllFeatures.SaveModels();

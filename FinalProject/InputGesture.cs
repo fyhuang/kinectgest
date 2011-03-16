@@ -27,6 +27,15 @@ namespace FinalProject
 			}
 		}
 		
+		static public InputGesture FromJointStates(IEnumerable<JointState> states)
+		{
+			InputGesture ig = new InputGesture(null);
+			ig.States = new List<JointState>(states);
+			if ( ig.States.Count > 0 )
+				ig.StartTime = ig.States[0].Timestamp;
+			return ig;
+		}
+		
 		public float TotalTime {
 			get {
 				return States[States.Count-1].Timestamp - StartTime;
