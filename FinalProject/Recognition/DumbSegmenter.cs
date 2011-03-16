@@ -43,6 +43,7 @@ namespace FinalProject
 			}
 			else {
 				LastGesture.AddJointState(js);
+				mCurrSegmentSize++;
 			}
 		}
 	}

@@ -135,7 +135,7 @@ namespace FinalProject
 			return -1;
 		}
 		
-		bool _FeatureSeparatesData(int findex, List<LabeledGesture> data, float[][] feature_results)
+		bool _FeatureSeparatesData(int findex, string gname, List<LabeledGesture> data, float[][] feature_results)
 		{
 			return false;
 		}
