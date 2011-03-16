@@ -43,7 +43,7 @@ namespace FinalProject
 		}
 		public RecognizerResult RecognizeSingleGesture (InputGesture g)
 		{
-			List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
+			List<Features.IGestureFeature> features = Features.AllFeatures.GestureFeatures;
 			
 			var results = new List<GestureWeight>();
 			foreach ( var kvp in mWeights ) {
@@ -87,7 +87,7 @@ namespace FinalProject
 		                      List<LabeledGesture> inputs,
 		                      string class_name,
 		                      int max_iters) {
-			List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
+			List<Features.IGestureFeature> features = Features.AllFeatures.GestureFeatures;
 			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
 			var oldWeights = new List<double>(features.Count + 1);
 			
