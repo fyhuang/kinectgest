@@ -179,7 +179,7 @@ namespace FinalProject
 				foreach ( var frame in gest.States ) {
 					mSeg.AddState(frame);
 					mVisWindow.CurrState = frame;
-					System.Threading.Thread.Sleep((int)((frame.Timestamp - lastTime) * 1500.0f));
+					System.Threading.Thread.Sleep((int)((frame.Timestamp - lastTime) * 750.0f));
 					lastTime = frame.Timestamp;
 				}
 				mSeg.Finish();
