@@ -17,8 +17,8 @@ namespace FinalProject
 		string[] mGestureNames;
 		
 		public Recognizer() {
-			mGestureNames = new string[] {"clap", "jump", "low_kick", "punch", "throw"};
-			//string[] trainingNames = {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
+			//mGestureNames = new string[] {"clap", "jump", "low_kick", "punch", "throw"};
+			mGestureNames = new string[] {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 		}
 		
 		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format = "gestures/track_{0}_{1:00}.log") {

@@ -16,6 +16,7 @@ namespace FinalProject.Features
 				//new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
+				new JointAmplitude("left-palm", JointState.JointComponent.PosX, false),
 				
 				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),

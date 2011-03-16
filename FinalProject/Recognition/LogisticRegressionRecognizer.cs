@@ -95,6 +95,9 @@ namespace FinalProject
 			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
 			var oldWeights = new List<double>(features.Count + 1);
 			
+			// TODO: check for quasi/complete-separation, so that we can add
+			// tons of features without worry
+			
 			var sw = new System.Diagnostics.Stopwatch(); sw.Start();
 			var num_iters = 0;
 			bool converged = true;
