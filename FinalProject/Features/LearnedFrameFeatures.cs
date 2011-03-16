@@ -55,7 +55,11 @@ namespace FinalProject.Features
 
 		public float QueryFrame (JointState js)
 		{
-			throw new NotImplementedException ();
+			var error_sum = 0.0;
+			for ( int i = 0; i < js.RelativeJoints.Length; i++ ) {
+				error_sum += (js.RelativeJoints[i] - mAverage[i]).LengthFast;
+			}
+			return (float)(mVariance / error_sum);
 		}
 		
 		public override string ToString ()

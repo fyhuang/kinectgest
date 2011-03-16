@@ -30,5 +30,14 @@ namespace FinalProject.Features
 				return 0.0f;
 		}
 	}
+	
+	public class RHandForward : IFrameFeature {
+		public float QueryFrame(JointState js) {
+			if (js.Pos("right-palm").Z > 0.5f)
+				return 1.0f;
+			else
+				return 0.0f;
+		}
+	}
 }
 

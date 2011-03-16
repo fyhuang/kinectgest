@@ -88,15 +88,12 @@ namespace FinalProject
 		/// The number of iterations it took to learn this class
 		/// </returns>
 		int LearnGestureClass(float[][] feature_results,
-		                      List<Tuple<string, InputGesture>> inputs,
+		                      List<LabeledGesture> inputs,
 		                      string class_name,
 		                      int max_iters) {
 			List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
 			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
 			var oldWeights = new List<double>(features.Count + 1);
-			
-			// TODO: check for quasi/complete-separation, so that we can add
-			// tons of features without worry
 			
 			var sw = new System.Diagnostics.Stopwatch(); sw.Start();
 			var num_iters = 0;
@@ -138,6 +135,11 @@ namespace FinalProject
 			return -1;
 		}
 		
+		bool _FeatureSeparatesData(int findex, List<LabeledGesture> data, float[][] feature_results)
+		{
+			return false;
+		}
+		
 		public void Train (IDictionary<string, IList<InputGesture>> gestures)
 		{
 			var allgestures = new List<LabeledGesture>();
@@ -147,13 +149,15 @@ namespace FinalProject
 				}
 			}
 			
-			
 			var feature_results = new float[gestures.Values.Sum(x => x.Count)][];
 			for ( int i = 0; i < allgestures.Count; i++ ) {
 				var temp = Features.AllFeatures.GestureFeatureResults(allgestures[i].Item2).ToList();
 				temp.Add(1.0f);
 				feature_results[i] = temp.ToArray();
 			}
+			
+			// TODO: check for quasi/complete-separation, so that we can add
+			// tons of features without worry
 			
 			int max_iters = 0;
 			foreach ( var kvp in gestures ) {

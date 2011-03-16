@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 
 namespace FinalProject
 {
@@ -38,7 +39,7 @@ namespace FinalProject
 				numLoaded++;
 			}
 			
-			System.Console.WriteLine("Loaded {0} joint states from {1}", numLoaded, mLogFilename);
+			Trace.WriteLine(String.Format("Loaded {0} joint states from {1}", numLoaded, mLogFilename));
 		}
 		
 		IEnumerator IEnumerable.GetEnumerator() {

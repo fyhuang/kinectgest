@@ -20,14 +20,17 @@ namespace FinalProject.Features
 				
 				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
+				new ProportionChange("left-wrist", JointState.JointComponent.Angle),
 				
 				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
 				new ProportionChange("right-foot", JointState.JointComponent.Angle),
+				new MinDistance("left-palm", "right-palm"),
 				
 				new NeckAmplitude(),
 				new ProportionFrames(new HighFoot()),
-				new ProportionFrames(new HandsTogether()),
+				//new ProportionFrames(new HandsTogether()),
 				new ProportionFrames(new RHPastNeck()),
+				new ProportionFrames(new RHandForward()),
 				
 				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
 				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),

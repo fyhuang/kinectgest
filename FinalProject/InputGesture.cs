@@ -18,16 +18,24 @@ namespace FinalProject
 		public InputGesture(IEnumerable<RawJointState> states)
 		{
 			States = new List<JointState>();
-			foreach ( var js in states ) {
-				States.Add(JointState.FromRawJointState(js));
+			if ( states != null ) {
+				foreach ( var js in states ) {
+					States.Add(JointState.FromRawJointState(js));
+				}
+				if ( States.Count > 0 )
+					StartTime = States[0].Timestamp;
 			}
-			StartTime = States[0].Timestamp;
 		}
 		
 		public float TotalTime {
 			get {
 				return States[States.Count-1].Timestamp - StartTime;
 			}
+		}
+		
+		public void AddJointState(JointState state) {
+			States.Add(state);
+			if ( States.Count == 1 ) StartTime = States[0].Timestamp;
 		}
 		
 		/// <summary>

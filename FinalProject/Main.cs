@@ -17,11 +17,14 @@ namespace FinalProject
 		string[] mGestureNames;
 		
 		public Recognizer() {
-			//mGestureNames = new string[] {"clap", "jump", "low_kick", "punch", "throw"};
-			mGestureNames = new string[] {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
+			mGestureNames = new string[] {"clap", "flick_left", "flick_right", "jump", "low_kick", "punch", "throw"};
+			//mGestureNames = new string[] {"clap", "flick_left", "flick_right", "high_kick", "jump", "low_kick", "punch", "throw", "wave"};
 		}
 		
-		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format = "gestures/track_{0}_{1:00}.log") {
+		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training) {
+			return LoadData(names, training, "gestures/track_{0}_{1:00}.log");
+		}
+		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format) {
 			var output = new Dictionary<string, IList<InputGesture>>();
 			foreach ( var name in names ) {
 				output.Add(name, new List<InputGesture>());
@@ -41,7 +44,7 @@ namespace FinalProject
 			}
 			
 			//System.Console.WriteLine("Done loading training data");
-			//Utility.Utility.PrintMemoryUsage();
+			Utility.Utility.PrintMemoryUsage();
 			return output;
 		}
 		
@@ -142,7 +145,18 @@ namespace FinalProject
 			case Command.TestRealtime:
 				LoadModels();
 				gest = new InputGesture(new LogFileLoader(filename));
+				mSeg.GestureSegmented += delegate(object sender, EventArgs e) {
+					var segm = ((ISegmenter)sender).LastGesture;
+					var recres = mRec.RecognizeSingleGesture(segm);
+					if ( recres.Confidence1 > 0.5f ) {
+						Console.WriteLine(result.Gesture1);
+					}
+					else {
+						Console.WriteLine("Inconclusive");
+					}
+				};
 				foreach ( var frame in gest.States ) {
+					mSeg.AddState(frame);
 				}
 				break;
 				
