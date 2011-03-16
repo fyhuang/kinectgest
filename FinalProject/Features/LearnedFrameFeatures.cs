@@ -12,17 +12,41 @@ namespace FinalProject.Features
 	{
 		float[] mVariance;
 		float[] mAverage;
+		readonly float[] mWeights;
+		
+		public NeutralStance() {
+			mWeights = new float[] {
+				0.0f,
+				0.1f, // Head
+				0.2f, // R shoulder
+				2.0f,
+				5.0f,
+				0.1f,
+				0.2f, // L shoulder
+				2.0f,
+				5.0f,
+				0.1f,
+				0.1f, // R hip
+				1.0f,
+				1.0f,
+				0.1f,
+				0.1f, // L hip
+				1.0f,
+				1.0f,
+				0.1f,
+				0.1f, // R pelvis
+				0.1f
+			};
+		}
 
 		public float QueryFrame (JointState js)
 		{
 			var error_sum = 0.0f;
 			for ( int i = 0; i < js.RelativeAngles.Length; i++ ) {
 				var error = (js.RelativeAngles[i] - mAverage[i]);
-				if ( error > 0.01f ) {
-					error_sum += Utility.Sigmoid(mVariance[i] / Math.Abs(error));
-				}
+				error_sum += 1.0f - (Utility.Sigmoid(Math.Abs(error) - mVariance[i]) * mWeights[i]);
 			}
-			var total_error = (error_sum / (float)js.RelativeAngles.Length) * 2.0f;
+			var total_error = error_sum / (float)mWeights.Length;
 			Console.WriteLine("Total error: {0}", total_error);
 			return total_error;
 		}
