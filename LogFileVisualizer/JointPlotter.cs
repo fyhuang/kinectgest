@@ -7,7 +7,6 @@ using System.Windows.Forms;
 using System.Collections.Generic;
 
 using FinalProject;
-using FinalProject.Utility;
 using ZedGraph;
 
 namespace LogFileVisualizer
