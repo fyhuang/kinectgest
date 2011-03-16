@@ -78,6 +78,7 @@
     <Compile Include="Recognition\DumbSegmenter.cs" />
     <Compile Include="Features\LearnedFrameFeatures.cs" />
     <Compile Include="GUI\JointVisualizer.cs" />
+    <Compile Include="Recognition\NaiveBayesRecognizer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.0.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4">
@@ -111,6 +112,6 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Recognition\AggregateFeatureRecognizer.cs" />
+    <None Include="README.txt" />
   </ItemGroup>
 </Project>

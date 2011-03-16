@@ -11,7 +11,7 @@ namespace FinalProject
 		/// <summary>
 		/// How big a sequence of frames has to be to call it a gesture
 		/// </summary>
-		const int _minSegmentSize = 8;
+		const int _minSegmentSize = 12;
 		/// <summary>
 		/// How many neutral frames in a row need to happen to end a gesture
 		/// </summary>
@@ -43,11 +43,14 @@ namespace FinalProject
 		
 		bool _IsNeutralStance(JointState js) {
 			// TODO: punch stance
-			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > 0.85f;
+			float tolerance = 0.85f;
+			float damping = mCurrSegmentSize / 175.0f;
+			//Console.WriteLine("Damping: {0}", damping * damping);
+			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > (tolerance - damping * damping);
 		}
 		
 		void _CheckIfSegmented() {
-			if ( mCurrSegmentSize > _minSegmentSize ) {
+			if ( mCurrSegmentSize >= _minSegmentSize ) {
 				Console.WriteLine("Segmented gesture");
 				LastGesture = InputGesture.FromJointStates(mCurrGesture);
 				GestureSegmented(this, null);
