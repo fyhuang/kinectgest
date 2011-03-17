@@ -12,12 +12,12 @@ namespace FinalProject.Features
 		
 		static AllFeatures() {
 			GestureFeatures = new List<IGestureFeature> {
-				//new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
+				new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
 				new JointAmplitude("left-palm", JointState.JointComponent.PosX, false),
 				
-				//new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
+				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
 				new ProportionChange("left-wrist", JointState.JointComponent.Angle),
 				
@@ -32,11 +32,26 @@ namespace FinalProject.Features
 				new ProportionFrames(new RHPastNeck()),
 				new ProportionFrames(new RHandForward()),
 				
-				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
+				new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
 				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),
 				new DerivativeSum("right-palm", JointState.JointComponent.PosX, x => x.Component("right-palm", JointState.JointComponent.PosZ) > 0.15f),
 				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)
 			};
+			
+			// Auxiliary features (enable at your own peril!)
+			/*var other_joints = new[]{"right-shoulder", "left-shoulder", "right-elbow", "left-elbow", "right-knee", "left-knee"};
+			foreach ( var j in other_joints ) {
+				GestureFeatures.Add(new JointAmplitude(j, JointState.JointComponent.PosX, false));
+				GestureFeatures.Add(new JointAmplitude(j, JointState.JointComponent.PosY, false));
+				GestureFeatures.Add(new JointAmplitude(j, JointState.JointComponent.PosZ, false));
+				GestureFeatures.Add(new JointAmplitude(j, JointState.JointComponent.Angle, false));
+				foreach ( var k in other_joints ) {
+					if ( j != k ) {
+						GestureFeatures.Add(new MinDistance(j, k));
+						GestureFeatures.Add(new MaxDistance(j, k));
+					}
+				}
+			}*/
 			
 			
 			LearnedFrameFeatures = new Dictionary<string, ILearnedFrameFeature>() {

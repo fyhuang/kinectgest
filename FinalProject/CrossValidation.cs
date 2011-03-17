@@ -34,7 +34,7 @@ namespace FinalProject
 		}
 		
 		public bool IsTraining(int ix, int max) {
-			if ( (ix + Index) % (max / 4 + 1) == 0 ) return false;
+			if ( (ix + Index) % 4 == 0 ) return false;
 			return true;
 		}
 	}
