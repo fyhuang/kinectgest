@@ -215,7 +215,7 @@ namespace FinalProject
 						var cki = Console.ReadKey(true);
 						if ( cki.Key == ConsoleKey.X ) break;
 					}
-					Thread.Sleep(30);
+					Thread.Sleep(0);
 				}
 				
 				mSeg.Finish();

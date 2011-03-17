@@ -23,10 +23,10 @@ namespace FinalProject
 		{
 			mWeights = new Dictionary<string, List<double>>();
 			mStepSize = 0.05;
-			mConvergenceThreshold = 0.2;
+			mConvergenceThreshold = 0.1;
 			//mStepSize = 0.1; // For profiling
 			//mConvergenceThreshold = 2.0;
-			mAlpha = 0.6f;
+			mAlpha = 0.5f;
 		}
 		
 		public string[] Gestures {
@@ -73,7 +73,6 @@ namespace FinalProject
 			double sum = 0.0f;
             for ( int i = 0; i < weights.Count; i++ ) {
 				sum += weights[i] * feature_results[mValidFeatures[i]];
-                i++;
 			}
 			return Utility.Sigmoid(sum);
 		}
