@@ -105,7 +105,7 @@ namespace FinalProject
 			////////////////////
 			// CHANGE THESE LINES TO SWAP MODELS
 			////////////////////
-			mRec = new SoftmaxRegressionRecognizer();
+			mRec = new LogisticRegressionRecognizer();
 			mSeg = new DumbSegmenter();
 			
 			Console.WriteLine("Using recognizer {0}", mRec.GetType().ToString());
