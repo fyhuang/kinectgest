@@ -1,4 +1,4 @@
-#LyX 1.6.8 created this file. For more info see http://www.lyx.org/
+#LyX 1.6.9 created this file. For more info see http://www.lyx.org/
 \lyxformat 345
 \begin_document
 \begin_header
@@ -6,7 +6,7 @@
 \use_default_options true
 \language english
 \inputencoding auto
-\font_roman palatino
+\font_roman default
 \font_sans default
 \font_typewriter default
 \font_default_family default
@@ -387,8 +387,189 @@ The neutral stance model represents a stance where the user is idle and
  not in the middle of performing a gesture.
 \end_layout
 
+\begin_layout Subsection
+Model for single gesture recognition
+\end_layout
+
+\begin_layout Standard
+To formalize our model, we introduce the following notations: Let 
+\begin_inset Formula $C$
+\end_inset
+
+ be the overall gesture class node that is hidden and we would like to know
+ its value, ranging from 1 to 
+\begin_inset Formula $k$
+\end_inset
+
+, where 
+\begin_inset Formula $k$
+\end_inset
+
+ is the total number of gesture class labels.
+ Let 
+\begin_inset Formula $F_{1},\ldots,\ F_{m}$
+\end_inset
+
+ be feature nodes that are parents of the input gesture sequence node 
+\begin_inset Formula $D$
+\end_inset
+
+, and further in our most basic model, 
+\begin_inset Formula $C$
+\end_inset
+
+ is the parent of all feature nodes.
+ The basic graphical model we used is shown in TODO.
+ To model the cumulative distribution function (cdf) of the class label
+ node, which takes on discrete values, given inputs from all feature nodes,
+ which produce continuous values, we considered several different approaches.
+\end_layout
+
+\begin_layout Subsubsection
+Logistic regression
+\end_layout
+
+\begin_layout Standard
+One approach is that instead of considering the class label node by itself,
+ we break it into 
+\begin_inset Formula $k$
+\end_inset
+
+ subnodes, 
+\begin_inset Formula $G_{1},\ldots,\ G_{k}$
+\end_inset
+
+, and let node 
+\begin_inset Formula $C$
+\end_inset
+
+ be the parent of all 
+\begin_inset Formula $k$
+\end_inset
+
+ gesture class subnodes.
+ Each subnode 
+\begin_inset Formula $G_{i}$
+\end_inset
+
+ takes on binary values such that 1 means the input gesture sequence belongs
+ to this particular gesture class 
+\begin_inset Formula $i$
+\end_inset
+
+, and it is natural to model the relationship between each 
+\begin_inset Formula $G_{i}$
+\end_inset
+
+ and 
+\begin_inset Formula $F_{1},\ldots,\ F_{m}$
+\end_inset
+
+ as a bernoulli distribution, i.e.
+ 
+\begin_inset Formula $P(G_{i}\ |\ F_{1},\ldots,\ F_{m})\sim Bernoulli(\theta)$
+\end_inset
+
+ where 
+\begin_inset Formula $\theta$
+\end_inset
+
+ is depended upon the values of 
+\begin_inset Formula $F_{1}$
+\end_inset
+
+ through 
+\begin_inset Formula $F_{n}$
+\end_inset
+
+.
+ We can also view each 
+\begin_inset Formula $P(G_{i}=1\ |\ F_{1},\ldots,\ F_{m})$
+\end_inset
+
+ as the confidence score that the given input gesture sequence belongs to
+ this particular gesture class 
+\begin_inset Formula $i$
+\end_inset
+
+.
+ Then, the overall class label node, which takes on values 1 through 
+\begin_inset Formula $k$
+\end_inset
+
+, is simply a selector random variable that selects the gesture class that
+ has the highest confidence score for this particular input gesture sequence.
+ To determine the cdf of each subnode 
+\begin_inset Formula $G_{i}$
+\end_inset
+
+, which follows a bernoulli distribution, we naturally use a logistic regression
+ during learning.
+\end_layout
+
+\begin_layout Subsubsection
+Softmax regression
+\end_layout
+
+\begin_layout Standard
+Another approach we considered was to model the distribution of 
+\begin_inset Formula $C$
+\end_inset
+
+ given feature values 
+\begin_inset Formula $F_{1},\ldots,\ F_{m}$
+\end_inset
+
+ according to a multinomial distribution, i.e.
+ 
+\begin_inset Formula $P(C\ |\ F_{1},\ldots,\ F_{m})\sim Multinomial(\theta_{1},\ldots,\ \theta_{m})$
+\end_inset
+
+ for some 
+\begin_inset Formula $\theta_{1},\ldots,\ \theta_{m}$
+\end_inset
+
+ such that their sum is 1.
+ After we obtain the specific parameters of this distribution given any
+ inputs 
+\begin_inset Formula $F_{1},\ldots,\ F_{m}$
+\end_inset
+
+, we can treat each 
+\begin_inset Formula $P(C=k\ |\ F_{1},\ldots,\ F_{m})$
+\end_inset
+
+ as a confidence score that this input gesture sequence belongs to a specific
+ gesture class 
+\begin_inset Formula $k$
+\end_inset
+
+.
+ The final output of our 
+\begin_inset Quotes eld
+\end_inset
+
+recognizer
+\begin_inset Quotes erd
+\end_inset
+
+ is then simply the most probable gesture class under the computed set of
+ feature values.
+ To determine the cdf of class node 
+\begin_inset Formula $C$
+\end_inset
+
+, which follows a multinomial distribution discussed above, we naturally
+ use a softmax regression during learning.
+\end_layout
+
 \begin_layout Section
 Process
+\end_layout
+
+\begin_layout Standard
+TODO: write about how complete separation causes softmax regression to produce
+ terrible results but still converges.
 \end_layout
 
 \begin_layout Section

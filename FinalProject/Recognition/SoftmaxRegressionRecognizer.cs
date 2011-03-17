@@ -74,7 +74,7 @@ namespace FinalProject
 
         public RecognizerResult RecognizeSingleGesture(InputGesture g)
         {
-            List<IGestureFeature> features = Features.AllFeatures.GestureFeatures;
+            List<Features.IGestureFeature> features = Features.AllFeatures.GestureFeatures;
 			
 			var results = new List<GestureWeight>();
             foreach (var kvp in mWeights)
