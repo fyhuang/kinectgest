@@ -12,5 +12,5 @@ done
 for i in {1..10}
 do
     echo "CV $i"
-    cat test_$i.txt | grep -A 1 'TEST'
+    cat test_results/test_$i.txt | grep -A 1 'TEST'
 done
