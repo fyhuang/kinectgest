@@ -69,7 +69,7 @@ namespace FinalProject
 			};
 		}
 		
-		double _Sigmoid(List<double> weights, float[] feature_results) {
+		unsafe double _Sigmoid(List<double> weights, float[] feature_results) {
 			double sum = 0.0f;
 			for ( int i = 0; i < weights.Count; i++ ) {
 				sum += weights[i] * feature_results[mValidFeatures[i]];
