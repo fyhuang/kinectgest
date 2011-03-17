@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace FinalProject
 {
@@ -114,10 +115,23 @@ namespace FinalProject
 			mSegFilename = "models/" + mSeg.GetType().ToString() + ".seg.model";
 			
 			
+			mSeg.GestureSegmented += delegate(object sender, EventArgs e) {
+				var segm = ((ISegmenter)sender).LastGesture;
+				var recres = mRec.RecognizeSingleGesture(segm);
+				if ( recres.Confidence1 > 0.5f ) {
+					Console.WriteLine("Recognized gesture: {0}", recres.Gesture1);
+				}
+				else {
+					Console.WriteLine("Inconclusive");
+				}
+			};
+			
+			
 			string filename = "gestures/track_high_kick_01.log";
 			if ( args.Length > 1 ) filename = args[1];
 			
 			InputGesture gest;
+			Thread visthread;
 			switch ( c ) {
 			case Command.Train:
 				Train();
@@ -156,18 +170,7 @@ namespace FinalProject
 			case Command.TestRealtime:
 				LoadModels();
 				gest = new InputGesture(new LogFileLoader(filename));
-				mSeg.GestureSegmented += delegate(object sender, EventArgs e) {
-					var segm = ((ISegmenter)sender).LastGesture;
-					var recres = mRec.RecognizeSingleGesture(segm);
-					if ( recres.Confidence1 > 0.5f ) {
-						Console.WriteLine("Recognized gesture:\n{0}", recres.ToString());
-					}
-					else {
-						Console.WriteLine("Inconclusive");
-					}
-				};
-				
-				var visthread = new System.Threading.Thread(new System.Threading.ThreadStart(this.StartVisualize));
+				visthread = new Thread(new ThreadStart(this.StartVisualize));
 				visthread.Start();
 				while ( true ) { // Wait for window to get created
 					lock ( this ) {
@@ -179,11 +182,44 @@ namespace FinalProject
 				foreach ( var frame in gest.States ) {
 					mSeg.AddState(frame);
 					mVisWindow.CurrState = frame;
-					System.Threading.Thread.Sleep((int)((frame.Timestamp - lastTime) * 750.0f));
+					Thread.Sleep((int)((frame.Timestamp - lastTime) * 750.0f));
 					lastTime = frame.Timestamp;
 				}
 				mSeg.Finish();
 				
+				visthread.Abort();
+				break;
+				
+			case Command.RunRealtime:
+				LoadModels();
+				visthread = new Thread(new ThreadStart(this.StartVisualize));
+				visthread.Start();
+				while ( true ) { // Wait for window to get created
+					lock ( this ) {
+						if ( mVisWindow != null ) break;
+					}
+				}
+				
+				var nfl = new NetworkFrameListener(4711);
+				nfl.Start();
+				Console.WriteLine("Press the 'x' key to quit");
+				
+				while ( true ) {
+					var frame = nfl.GetState();
+					if ( frame != null ) {
+						var js = JointState.FromRawJointState(frame);
+						mSeg.AddState(js);
+						mVisWindow.CurrState = js;
+					}
+					if ( Console.KeyAvailable ) {
+						var cki = Console.ReadKey(true);
+						if ( cki.Key == ConsoleKey.X ) break;
+					}
+					Thread.Sleep(30);
+				}
+				
+				mSeg.Finish();
+				nfl.Stop();
 				visthread.Abort();
 				break;
 				
