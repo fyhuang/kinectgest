@@ -46,8 +46,8 @@ namespace FinalProject
 
 		public RecognizerResult RecognizeSingleGesture (InputGesture g)
 		{
-			List<Features.IGestureFeature> features = new List<Features.IGestureFeature>();
-			for ( int i = 0; i < mValidFeatures.Count - 1; i++ ) features.Add(Features.AllFeatures.GestureFeatures[i]);
+			var features = mValidFeatures.Take(mValidFeatures.Count - 1).Select(x => Features.AllFeatures.GestureFeatures[x]).ToList();
+			//Console.WriteLine("{0} features to be checked", features.Count);
 			
 			var results = new List<GestureWeight>();
 			foreach ( var kvp in mWeights ) {
@@ -56,7 +56,7 @@ namespace FinalProject
 					float fres = features[i].QueryGesture(g);
 					gw.weight += kvp.Value[i] * fres;
 				}
-				gw.weight += kvp.Value[features.Count];
+				gw.weight += kvp.Value[mValidFeatures.Count-1];
 				gw.weight = Utility.Sigmoid(gw.weight);
 				results.Add(gw);
 			}
@@ -91,7 +91,7 @@ namespace FinalProject
 		                      List<LabeledGesture> inputs,
 		                      string class_name,
 		                      int max_iters) {
-			mWeights[class_name] = Enumerable.Range(0, mValidFeatures.Count).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
+			mWeights[class_name] = new double[mValidFeatures.Count].ToList(); // The features.Count-indexed value is the "intercept"
 			var oldWeights = new List<double>(mValidFeatures.Count);
 			
 			var sw = new System.Diagnostics.Stopwatch(); sw.Start();
@@ -99,7 +99,7 @@ namespace FinalProject
 			bool converged = true;
 			//float diff = 0.0f;
 			do {
-				if (num_iters > Math.Max(max_iters * 10, 6000)) {
+				if (num_iters >= Math.Max(max_iters * 10, 8000)) {
 					Console.WriteLine("WARNING: {0} not converging", class_name);
 					converged = false;
 					break;
@@ -136,6 +136,20 @@ namespace FinalProject
 		
 		bool _FeatureSeparatesData(int findex, string gname, List<LabeledGesture> data, float[][] feature_results)
 		{
+			float[] mins = new float[2];
+			float[] maxs = new float[2];
+			for ( int i = 0; i < data.Count; i++ ) {
+				var g = data[i];
+				int isclass = (g.Item1 == gname) ? 1 : 0;
+				mins[isclass] = Math.Min(mins[isclass], feature_results[i][findex]);
+				maxs[isclass] = Math.Max(mins[isclass], feature_results[i][findex]);
+			}
+			float dist1 = mins[1] - maxs[0];
+			float dist2 = mins[0] - maxs[1];
+			float range = Math.Max(maxs[0] - mins[0], maxs[1] - mins[1]);
+			float thres = (range >= 1.0f) ? 1.0f / range : 1.0f;
+			if ( dist1 > thres || dist2 > thres )
+				return true;
 			return false;
 		}
 		
