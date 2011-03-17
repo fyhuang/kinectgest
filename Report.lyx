@@ -1,4 +1,4 @@
-#LyX 1.6.9 created this file. For more info see http://www.lyx.org/
+#LyX 1.6.8 created this file. For more info see http://www.lyx.org/
 \lyxformat 345
 \begin_document
 \begin_header
@@ -6,7 +6,7 @@
 \use_default_options true
 \language english
 \inputencoding auto
-\font_roman default
+\font_roman palatino
 \font_sans default
 \font_typewriter default
 \font_default_family default
@@ -16,7 +16,7 @@
 \font_tt_scale 100
 
 \graphics default
-\paperfontsize default
+\paperfontsize 10
 \spacing single
 \use_hyperref false
 \papersize default
@@ -26,8 +26,10 @@
 \cite_engine basic
 \use_bibtopic false
 \paperorientation portrait
-\topmargin 0.75in
-\bottommargin 0.75in
+\leftmargin 0.75in
+\topmargin 0.85in
+\rightmargin 0.75in
+\bottommargin 0.85in
 \secnumdepth 3
 \tocdepth 3
 \paragraph_separation indent
@@ -49,7 +51,7 @@ A Segmentation-based Approach for Realtime Gesture Recognition
 \end_layout
 
 \begin_layout Author
-Yifeng Huang <fyhuang@>, Ivan Zhang <zhifanz@>
+Yifeng Huang <fyhuang>, Ivan Zhang <zhifanz>
 \end_layout
 
 \begin_layout Standard
@@ -282,8 +284,31 @@ result
 \end_inset
 
 .
- Each result encapsulates three possible gesture names that the engine thinks
- are most likely with their confidence scores.
+ Each result encapsulates three possible gesture 
+\begin_inset Quotes eld
+\end_inset
+
+classes
+\begin_inset Quotes erd
+\end_inset
+
+/
+\begin_inset Quotes erd
+\end_inset
+
+types
+\begin_inset Quotes erd
+\end_inset
+
+/
+\begin_inset Quotes erd
+\end_inset
+
+names
+\begin_inset Quotes erd
+\end_inset
+
+ that the engine thinks are most likely with their confidence scores.
 \end_layout
 
 \begin_layout Subsection
@@ -385,6 +410,29 @@ neutral stance
 \begin_layout Standard
 The neutral stance model represents a stance where the user is idle and
  not in the middle of performing a gesture.
+ The neutral stance model is fairly simplistic: we model the mean and variance
+ of the normalized positions of all the joints from a customized set of
+ parents.
+ The selections were made in this model to fit closely with expectations
+ about the human body (all the right arm joints, for example, were parented
+ to the right shoulder joint), as well as to minimize model error from differing
+ body shapes, height, etc.
+\end_layout
+
+\begin_layout Subsection
+The 
+\begin_inset Quotes eld
+\end_inset
+
+segmenter
+\begin_inset Quotes erd
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+TODO
 \end_layout
 
 \begin_layout Subsection
@@ -420,9 +468,10 @@ To formalize our model, we introduce the following notations: Let
 
  is the parent of all feature nodes.
  The basic graphical model we used is shown in TODO.
- To model the cumulative distribution function (cdf) of the class label
+ To model the cumulative distribution function (CDF) of the class label
  node, which takes on discrete values, given inputs from all feature nodes,
- which produce continuous values, we considered several different approaches.
+ which produce continuous values, we considered several different approaches
+ (see the section on Development and Implementation for the full story).
 \end_layout
 
 \begin_layout Subsubsection
@@ -497,14 +546,52 @@ One approach is that instead of considering the class label node by itself,
 \begin_inset Formula $k$
 \end_inset
 
-, is simply a selector random variable that selects the gesture class that
- has the highest confidence score for this particular input gesture sequence.
- To determine the cdf of each subnode 
+, is simply a selector variable that selects the gesture class that has
+ the highest confidence score for this particular input gesture sequence.
+ To determine the CDF of each subnode 
 \begin_inset Formula $G_{i}$
 \end_inset
 
 , which follows a bernoulli distribution, we naturally use a logistic regression
  during learning.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Report/LogisticDiagram.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Logistic regression model
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsubsection
@@ -555,7 +642,7 @@ recognizer
 
  is then simply the most probable gesture class under the computed set of
  feature values.
- To determine the cdf of class node 
+ To determine the CDF of class node 
 \begin_inset Formula $C$
 \end_inset
 
@@ -563,13 +650,145 @@ recognizer
  use a softmax regression during learning.
 \end_layout
 
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Report/SoftmaxDiagram.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Softmax regression model
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Section
-Process
+Development and implementation
 \end_layout
 
 \begin_layout Standard
-TODO: write about how complete separation causes softmax regression to produce
- terrible results but still converges.
+Early during development, we decided to implement cross-validation in order
+ to take advantage of our small training data size.
+ We use a roughly 75%/25% split for cross-validation.
+ We first concentrated on the recognizer component (single gesture recognition),
+ as we predicted that this part would be the most difficult to get good
+ results in.
+ The first model we implemented was a naïve Bayes model.
+ Since the naïve Bayes model, in its simplest implementation, uses only
+ binary features, we started with a small set of binary features.
+ These were features, for example, that measured whether the difference
+ between the minimum and the maximum values of a component (i.e.
+ the X-position of a joint) over the entire input gesture was greater than
+ a certain threshold.
+ This produced significantly-better-than-random results, but the highest
+ we could coax it to go was about 60% accuracy.
+\end_layout
+
+\begin_layout Standard
+We quickly realized, however, that binary features were not going to be
+ enough to encode the vast amount of variance and sublety present in the
+ problem domain.
+ At this point, taking inspiration from some comments made during the interactiv
+e sessions, we decided to implement a logistic regression model with continuous
+ features.
+ In both of these models, the features are functions which map an entire
+ input gesture to a real number.
+ In making the decision between choosing a more temporally-cogniscent model
+ and modeling these temporal relationships with features, we chose the latter
+ due to the much lower cost of learning and inference over the simpler model,
+ in addition to the ability to easily encode certain features as entire-gesture
+ functions rather than as graph structures.
+ (For example, the difference between the minimum and the maximum of a component
+ is significantly more compactly represented as a feature function.)
+\end_layout
+
+\begin_layout Standard
+Upon implementing logistic regression and obtaining some promising results,
+ we started to add more features to expand the power of our model.
+ Surprisingly, the training data contained enough information to support
+ at least 16 different features (which is what we ended up with).
+ None of our features were learned with near-zero weight across all gesture
+ classes.
+ We did, however, begin to encounter non-convergence problems with our logistic
+ regression.
+ After speaking to Andrew and doing some research, we determined that some
+ of our features were causing complete- or quasi-complete separation within
+ our dataset.
+ On realizing this, we added 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+-regularization to the logistic regression, as well as a check for completely-se
+parating features.
+ Upon the discovery of such a feature, the program warns the user and turns
+ the feature off (effectively preventing it from having influence on either
+ the training or the recognition process).
+\end_layout
+
+\begin_layout Standard
+At this point, we were fairly satisfied with our results, but wanted to
+ see if we could more naturally represent the relationship between the resulting
+ gesture class and the feature set than a set of distinct logistic regressions.
+ We decided to try a softmax regression with the same feature set.
+ However, after running both the logistic regression and the softmax regression
+ through a series of cross-validated tests, we found that the logistic regressio
+n still produced slightly better results, as well as being easier to work
+ with in the code.
+ When we were running experiments with the softmax regression, we discovered
+ some interesting phenomena.
+ Since we had not implemented separation-testing for the softmax code, we
+ ran it using several features which were known to completely separate the
+ training data.
+ As a result, while the regression did not fail to converge, the model was
+ completely unable to recognize test inputs, often producing results near
+ random.
+ We are still not completely certain whether the separation or simply a
+ particular quirk of the feature causes this.
+\end_layout
+
+\begin_layout Subsection
+Feature selection
+\end_layout
+
+\begin_layout Standard
+We began with a fairly spartan set of features, measuring global (across
+ a single input gesture) phenomena, such as (as mentioned) the difference
+ between the peaks.
+ This worked for fairly large movements, such as the punch and high kick
+ gestures.
+ We found that the data for the hand joint angle was quite noisy (by which
+ we mean oscillating from 0 to 90 degrees at a time), so for the features
+ that used joint angles we measured the wrist joint angle instead.
+ This gives much less noise, but also means we cannot see the angle of the
+ hand.
+ The gestures we started having problems with were initially the two flick
+ gestures, the wave, and the clap.
 \end_layout
 
 \begin_layout Section
@@ -587,7 +806,7 @@ Using the
 
 -normalized logistic regression model, we achieved extremely good results
  in single-gesture recognition tests.
- On average, cross-validation tests reported near or more than 90% accuracy.
+ Typically, cross-validation tests reported near or more than 90% accuracy.
  The output of a sample testing run can be seen in table TODO.
 \end_layout
 
@@ -658,7 +877,7 @@ clap
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+8
 \end_layout
 
 \end_inset
@@ -667,7 +886,7 @@ clap
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+8
 \end_layout
 
 \end_inset
@@ -696,7 +915,7 @@ flick_left
 \begin_inset Text
 
 \begin_layout Plain Layout
-3
+5
 \end_layout
 
 \end_inset
@@ -705,7 +924,7 @@ flick_left
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+7
 \end_layout
 
 \end_inset
@@ -714,7 +933,7 @@ flick_left
 \begin_inset Text
 
 \begin_layout Plain Layout
-75%
+71.4%
 \end_layout
 
 \end_inset
@@ -734,7 +953,7 @@ flick_right
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+6
 \end_layout
 
 \end_inset
@@ -743,7 +962,7 @@ flick_right
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+7
 \end_layout
 
 \end_inset
@@ -752,7 +971,7 @@ flick_right
 \begin_inset Text
 
 \begin_layout Plain Layout
-100%
+85.7%
 \end_layout
 
 \end_inset
@@ -772,7 +991,7 @@ high_kick
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+10
 \end_layout
 
 \end_inset
@@ -781,7 +1000,7 @@ high_kick
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+10
 \end_layout
 
 \end_inset
@@ -810,7 +1029,7 @@ jump
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+5
 \end_layout
 
 \end_inset
@@ -819,7 +1038,7 @@ jump
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+5
 \end_layout
 
 \end_inset
@@ -848,7 +1067,7 @@ low_kick
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+8
 \end_layout
 
 \end_inset
@@ -857,7 +1076,7 @@ low_kick
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+8
 \end_layout
 
 \end_inset
@@ -886,7 +1105,7 @@ punch
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+6
 \end_layout
 
 \end_inset
@@ -895,7 +1114,7 @@ punch
 \begin_inset Text
 
 \begin_layout Plain Layout
-4
+6
 \end_layout
 
 \end_inset
@@ -971,7 +1190,7 @@ wave
 \begin_inset Text
 
 \begin_layout Plain Layout
-3
+4
 \end_layout
 
 \end_inset
@@ -980,7 +1199,7 @@ wave
 \begin_inset Text
 
 \begin_layout Plain Layout
-100%
+75%
 \end_layout
 
 \end_inset
@@ -1002,7 +1221,7 @@ Total
 \begin_inset Text
 
 \begin_layout Plain Layout
-33
+54
 \end_layout
 
 \end_inset
@@ -1011,7 +1230,7 @@ Total
 \begin_inset Text
 
 \begin_layout Plain Layout
-34
+58
 \end_layout
 
 \end_inset
@@ -1020,7 +1239,7 @@ Total
 \begin_inset Text
 
 \begin_layout Plain Layout
-97.1%
+93.1%
 \end_layout
 
 \end_inset
@@ -1037,7 +1256,7 @@ Total
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Sample run, cross-validation index = 5
+Sample run, cross-validation index = 0
 \end_layout
 
 \end_inset
@@ -1070,7 +1289,7 @@ status open
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Naïve Bayes model, cross-validation index = 5
+Naïve Bayes model, cross-validation index = 0
 \end_layout
 
 \end_inset
