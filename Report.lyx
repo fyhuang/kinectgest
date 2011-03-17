@@ -1,0 +1,932 @@
+#LyX 1.6.8 created this file. For more info see http://www.lyx.org/
+\lyxformat 345
+\begin_document
+\begin_header
+\textclass article
+\use_default_options true
+\language english
+\inputencoding auto
+\font_roman palatino
+\font_sans default
+\font_typewriter default
+\font_default_family default
+\font_sc true
+\font_osf true
+\font_sf_scale 100
+\font_tt_scale 100
+
+\graphics default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_amsmath 1
+\use_esint 1
+\cite_engine basic
+\use_bibtopic false
+\paperorientation portrait
+\topmargin 0.75in
+\bottommargin 0.75in
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\papercolumns 2
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\author "" 
+\author "" 
+\end_header
+
+\begin_body
+
+\begin_layout Title
+A Segmentation-based Approach for Realtime Gesture Recognition
+\end_layout
+
+\begin_layout Author
+Yifeng Huang <fyhuang@>, Ivan Zhang <zhifanz@>
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset toc
+LatexCommand tableofcontents
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Introduction
+\end_layout
+
+\begin_layout Standard
+With the introduction of the Microsoft Kinect
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+texttrademark
+\end_layout
+
+\end_inset
+
+ and the subsequent release of open-source drivers for Windows, we have
+ seen entirely new avenues of motion sensing techniques open which had previousl
+y been prohibitively expensive for individual experimention.
+\end_layout
+
+\begin_layout Standard
+The first stage -- that of converting raw RGB and depth images into a usable
+ representation of the body -- is provided by a motion tracking program.
+ Our project takes motion tracking data from this program and tries to produce
+ a more holistic representation of the user's semantic intentions.
+ We accomplish this through a gesture recognition system where, for a given
+ target application, a set of gestures is defined, and the system recognizes
+ those gestures when performed by the user.
+\end_layout
+
+\begin_layout Standard
+The gestures we have selected to recognize as a demonstration of the system
+ are as follows: 
+\begin_inset Quotes eld
+\end_inset
+
+clap
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+flick_left
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+flick_right
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+high_kick
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+jump
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+low_kick
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+punch
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+throw
+\begin_inset Quotes erd
+\end_inset
+
+, 
+\begin_inset Quotes eld
+\end_inset
+
+wave
+\begin_inset Quotes erd
+\end_inset
+
+.
+ To simplify collection of training data, we recognized only 
+\begin_inset Quotes eld
+\end_inset
+
+right-handed
+\begin_inset Quotes erd
+\end_inset
+
+ gestures -- that is, only punches made with the right hand, kicks made
+ with the right foot, etc.
+ are recognized when the gesture has a handedness.
+ Most of these gestures are self-evident; a 
+\begin_inset Quotes eld
+\end_inset
+
+clap
+\begin_inset Quotes erd
+\end_inset
+
+ can be multiple or just a single clap, a 
+\begin_inset Quotes eld
+\end_inset
+
+throw
+\begin_inset Quotes erd
+\end_inset
+
+ resembles throwing a ball overhand, and the distinction between 
+\begin_inset Quotes eld
+\end_inset
+
+low_kick
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+high_kick
+\begin_inset Quotes erd
+\end_inset
+
+ is mainly in whether the foot comes to chest level or not.
+ Samples of some of these gestures can be found in figure TODO.
+\end_layout
+
+\begin_layout Section
+Overview of model
+\end_layout
+
+\begin_layout Subsection
+Definitions and data formats
+\end_layout
+
+\begin_layout Standard
+We will begin by introducing some terms to be used in the rest of this report.
+ A 
+\begin_inset Quotes eld
+\end_inset
+
+frame
+\begin_inset Quotes erd
+\end_inset
+
+ is a single time slice.
+ Each frame contains the locations and joint angles of all 20 joints.
+ See figure TODO for a schematic representation of the joint locations.
+ Each joint is represented as a 3-dimensional point; in addition, each joint
+ has a parent joint, which is intuitively defined.
+ (For a precise listing, see JointState.cs:43.) Using this, we define a 
+\begin_inset Quotes eld
+\end_inset
+
+joint angle
+\begin_inset Quotes erd
+\end_inset
+
+ to be the angle between the two vectors: 
+\begin_inset Formula $Pa(Joint)\rightarrow Joint$
+\end_inset
+
+ and 
+\begin_inset Formula $Pa(Pa(Joint))\rightarrow Pa(Joint)$
+\end_inset
+
+.
+ A 
+\begin_inset Quotes eld
+\end_inset
+
+gesture
+\begin_inset Quotes erd
+\end_inset
+
+ or 
+\begin_inset Quotes eld
+\end_inset
+
+input gesture
+\begin_inset Quotes erd
+\end_inset
+
+ is a non-empty sequence of frames.
+ We call the output of the recognition engine a 
+\begin_inset Quotes eld
+\end_inset
+
+result
+\begin_inset Quotes erd
+\end_inset
+
+.
+ Each result encapsulates three possible gesture names that the engine thinks
+ are most likely with their confidence scores.
+\end_layout
+
+\begin_layout Subsection
+Recognizing a gesture
+\end_layout
+
+\begin_layout Standard
+The process of recognizing a gesture involves several steps.
+ First, we train the various models used in the program with an appropriate
+ set of training data.
+ (Things that one should consider when generating training data are examined
+ in section TODO.) There are two trained models: one, the 
+\begin_inset Quotes eld
+\end_inset
+
+neutral stance
+\begin_inset Quotes erd
+\end_inset
+
+ model, recognizes whether single frames represent a 
+\begin_inset Quotes eld
+\end_inset
+
+neutral stance
+\begin_inset Quotes erd
+\end_inset
+
+.
+ The second, the 
+\begin_inset Quotes eld
+\end_inset
+
+recognizer
+\begin_inset Quotes erd
+\end_inset
+
+, takes input gestures (sequences of frames as defined above) and produces
+ a result.
+ During real-time operation, the engine receives 30 raw frames per second
+ from the motion tracker.
+ Raw frames are pre-processed by storing the absolute position of the neck
+ joint, and then recomputing the positions of the other joints relative
+ to the neck joint (joint angles are also computed at this step).
+ This is necessary, as the Kinect is able to track backward- and forward
+ motion, and our method needs to be translation-independent.
+ The processed frames are sent to the 
+\begin_inset Quotes eld
+\end_inset
+
+segmenter
+\begin_inset Quotes erd
+\end_inset
+
+, which uses the 
+\begin_inset Quotes eld
+\end_inset
+
+neutral stance
+\begin_inset Quotes erd
+\end_inset
+
+ model to separate the input stream into logical segments.
+ Some of these segments are then sent to the 
+\begin_inset Quotes eld
+\end_inset
+
+recognizer
+\begin_inset Quotes erd
+\end_inset
+
+ as input gestures.
+ Results from the recognizer are then printed/acted upon as they are received.
+\end_layout
+
+\begin_layout Standard
+This segmentation-based approach is the core of our ability to recognize
+ gestures in real-time.
+ By using a simpler method to first separate the continuous input stream
+ into discrete segments, heuristically culling those segments, and only
+ then running the full recognition model on those segments, we achieve high
+ recognition speed while still maintaining good recognition accuracy.
+ (See the results section for a more detailed description of our performance
+ results.) Needless to say, this is important in real-time applications like
+ video games.
+\end_layout
+
+\begin_layout Subsection
+The 
+\begin_inset Quotes eld
+\end_inset
+
+neutral stance
+\begin_inset Quotes erd
+\end_inset
+
+ model
+\end_layout
+
+\begin_layout Standard
+The neutral stance model represents a stance where the user is idle and
+ not in the middle of performing a gesture.
+\end_layout
+
+\begin_layout Section
+Process
+\end_layout
+
+\begin_layout Section
+Results
+\end_layout
+
+\begin_layout Subsection
+Single-gesture recognition
+\end_layout
+
+\begin_layout Standard
+Using the 
+\begin_inset Formula $L_{2}$
+\end_inset
+
+-normalized logistic regression model, we achieved extremely good results
+ in single-gesture recognition tests.
+ On average, cross-validation tests reported near or more than 90% accuracy.
+ The output of a sample testing run can be seen in table TODO.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="11" columns="4">
+<features booktabs="true">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<column alignment="center" valignment="top" width="0">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Gesture name
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+# correct
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+# total
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+% correct
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+clap
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+flick_left
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+75%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+flick_right
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+high_kick
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+jump
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+low_kick
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+punch
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+throw
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row interlinespace="1pt">
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+wave
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\emph on
+Total
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+33
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+34
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+97.1%
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Sample run, cross-validation index = 5
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We can immediately see the potential for this kind of model.
+ Compare to the results that we achieved by using a naïve Bayes model, as
+ seen in table TODO.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Naïve Bayes model, cross-validation index = 5
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Extensions, future work
+\end_layout
+
+\begin_layout Subsection
+The segmenter
+\end_layout
+
+\begin_layout Standard
+The segmentation process could be made more accurate with a more temporally-base
+d model.
+ Instead of using single-frame features (through the neutral stance model),
+ a more sophisticated segmenter might combine properties of several consecutive
+ frames to make a more accurate prediction about gesture start and end times.
+ This would allow the segmenter to generalize to perhaps more applications
+ and user types than the fixed heuristic we use.
+\end_layout
+
+\begin_layout Section
+Conclusions and applications
+\end_layout
+
+\end_body
+\end_document

@@ -43,6 +43,7 @@ namespace FinalProject
 				return other.weight.CompareTo(this.weight);
 			}
 		}
+
 		public RecognizerResult RecognizeSingleGesture (InputGesture g)
 		{
 			List<Features.IGestureFeature> features = new List<Features.IGestureFeature>();
