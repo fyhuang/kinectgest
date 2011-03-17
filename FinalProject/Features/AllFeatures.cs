@@ -14,28 +14,27 @@ namespace FinalProject.Features
 			GestureFeatures = new List<IGestureFeature> {
 				new JointAmplitude("right-palm", JointState.JointComponent.PosX, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
-				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
-				new JointAmplitude("left-palm", JointState.JointComponent.PosX, false),
+				//new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
+				//new JointAmplitude("left-palm", JointState.JointComponent.PosX, false),
 				
 				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
-				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
-				new ProportionChange("left-wrist", JointState.JointComponent.Angle),
+				//new ProportionChange("right-wrist", JointState.JointComponent.Angle),
+				//new ProportionChange("left-wrist", JointState.JointComponent.Angle),
 				
-				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
-				new ProportionChange("right-foot", JointState.JointComponent.Angle),
-				new MinDistance("left-palm", "right-palm"),
-				new MaxDistance("left-palm", "right-palm"),
+				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false)
+				//new ProportionChange("right-foot", JointState.JointComponent.Angle),
+				//new MinDistance("left-palm", "right-palm"),
+				//new MaxDistance("left-palm", "right-palm"),
 				
-				new NeckAmplitude(),
-				new ProportionFrames(new HighFoot()),
-				//new ProportionFrames(new HandsTogether()),
-				new ProportionFrames(new RHPastNeck()),
-				new ProportionFrames(new RHandForward()),
+				//new NeckAmplitude(),
+				//new ProportionFrames(new HighFoot()),
+				//new ProportionFrames(new RHPastNeck()),
+				//new ProportionFrames(new RHandForward()),
 				
-				new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
+				/*new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
 				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),
 				new DerivativeSum("right-palm", JointState.JointComponent.PosX, x => x.Component("right-palm", JointState.JointComponent.PosZ) > 0.15f),
-				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)
+				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)*/
 			};
 			
 			// Auxiliary features (enable at your own peril!)
