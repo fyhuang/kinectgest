@@ -215,7 +215,30 @@ high_kick
 \end_inset
 
  is mainly in whether the foot comes to chest level or not.
- Samples of some of these gestures can be found in figure TODO.
+ Samples of some of these gestures can be found in figures 3 and 4.
+\end_layout
+
+\begin_layout Subsection
+Related work
+\end_layout
+
+\begin_layout Standard
+We also considered approaches such as dynamic time-warping and HMMs
+\begin_inset CommandInset citation
+LatexCommand cite
+key "from-dtw-to-hmm"
+
+\end_inset
+
+, as well as temporal Bayesian networks
+\begin_inset CommandInset citation
+LatexCommand cite
+key "object-motion-dbn,dbn-figure-tracking"
+
+\end_inset
+
+, but ultimately implemented a two-stage algorithm using a simpler segmentation
+ model and a learned recognition model.
 \end_layout
 
 \begin_layout Section
@@ -238,7 +261,6 @@ frame
 
  is a single time slice.
  Each frame contains the locations and joint angles of all 20 joints.
- See figure TODO for a schematic representation of the joint locations.
  Each joint is represented as a 3-dimensional point; in addition, each joint
  has a parent joint, which is intuitively defined.
  (For a precise listing, see JointState.cs:43.) Using this, we define a 
@@ -319,8 +341,7 @@ Recognizing a gesture
 The process of recognizing a gesture involves several steps.
  First, we train the various models used in the program with an appropriate
  set of training data.
- (Things that one should consider when generating training data are examined
- in section TODO.) There are two trained models: one, the 
+ There are two trained models: one, the 
 \begin_inset Quotes eld
 \end_inset
 
@@ -417,22 +438,6 @@ The neutral stance model represents a stance where the user is idle and
  about the human body (all the right arm joints, for example, were parented
  to the right shoulder joint), as well as to minimize model error from differing
  body shapes, height, etc.
-\end_layout
-
-\begin_layout Subsection
-The 
-\begin_inset Quotes eld
-\end_inset
-
-segmenter
-\begin_inset Quotes erd
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-TODO
 \end_layout
 
 \begin_layout Subsection
@@ -900,8 +905,8 @@ not performing gesture
  distinction would be sufficient to achieve reasonable performance.
  This intuition proved to be somewhat correct: our original implementation
  of this idea was fairly successful.
- (See figure TODO for a screen capture.) Basically, we look for long strings
- of non-neutral-stance frames and call that a gesture.
+ Basically, we look for long strings of non-neutral-stance frames and call
+ that a gesture.
 \end_layout
 
 \begin_layout Standard
@@ -979,6 +984,90 @@ Results
 \end_layout
 
 \begin_layout Subsection
+Visualizations of gestures
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /Users/fyhuang/Projects/CS228/FinalProject/Report/HighKick.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+High kick gesture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+We created visualizations of some gestures to help the reader visualize
+ the input data.
+ These visualizations also helped us during the development process.
+ One graph of the joint components over a particular gesture is also included
+ (in figure 5).
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Report/Punch.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Punch gesture
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
 Single-gesture recognition
 \end_layout
 
@@ -990,7 +1079,7 @@ Using the
 -normalized logistic regression model, we achieved extremely good results
  in single-gesture recognition tests.
  Typically, cross-validation tests reported near or more than 90% accuracy.
- The output of a sample testing run can be seen in table TODO.
+ The output of a sample testing run can be seen in table 1.
 \end_layout
 
 \begin_layout Standard
@@ -1458,21 +1547,33 @@ Sample run, cross-validation index = 0
 
 \begin_layout Standard
 We can immediately see the potential for this kind of model.
- Compare to the results that we achieved by using a naïve Bayes model, as
- seen in table TODO.
+ We also include a plot which compares the results we obtain using our original
+ set of naïve features and our final results using more holistic features.
+ This comparison is in figure 6.
 \end_layout
 
 \begin_layout Standard
-\begin_inset Float table
+\begin_inset Float figure
 wide false
 sideways false
 status open
 
 \begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Report/PerformanceComparisonLogistic.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
 \begin_inset Caption
 
 \begin_layout Plain Layout
-Naïve Bayes model, cross-validation index = 0
+Performance comparison, initial features and final feature set
 \end_layout
 
 \end_inset
@@ -1480,31 +1581,99 @@ Naïve Bayes model, cross-validation index = 0
 
 \end_layout
 
-\end_inset
-
+\begin_layout Plain Layout
 
 \end_layout
 
-\begin_layout Section
-Extensions, future work
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
-The segmenter
+Real-time recognition
 \end_layout
 
 \begin_layout Standard
-The segmentation process could be made more accurate with a more temporally-base
-d model.
- Instead of using single-frame features (through the neutral stance model),
- a more sophisticated segmenter might combine properties of several consecutive
- frames to make a more accurate prediction about gesture start and end times.
- This would allow the segmenter to generalize to perhaps more applications
- and user types than the fixed heuristic we use.
+As mentioned above, we were able to achieve over 70% (subjective) accuracy
+ in real-time recognition.
+ (The results were measured by a human watching the animation and comparing
+ his observations to the recognized gestures.) Some gestures are missed and
+ some single gestures are 
+\begin_inset Quotes eld
+\end_inset
+
+split
+\begin_inset Quotes erd
+\end_inset
+
+, but for the most part, gestures can be performed in real-time with fairly
+ high recognition rates.
+ We have created a demonstration video which can be viewed at 
+\begin_inset Flex URL
+status collapsed
+
+\begin_layout Plain Layout
+
+http://www.youtube.com/watch?v=9gNDSujA3DQ
+\end_layout
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename /Users/fyhuang/Projects/CS228/FinalProject/Report/WristPlot.png
+	width 3in
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption
+
+\begin_layout Plain Layout
+Plot of joint components in right-wrist during wave
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
 Conclusions and applications
+\end_layout
+
+\begin_layout Standard
+We have prototyped one possible method of performing real-time gesture recogniti
+on.
+ We think that this method presents a useful blend of speed and accuracy
+ in real-time recognition, as well as fairly good robustness to noisy training
+ data and features.
+ Through doing this project, we have learned the importance of iterative
+ development and of effective management of a large number of features and
+ small data set in logistic regression.
+ While it's certainly not optimal for every application, we could definitely
+ see it or a similar approach being used in a fast-paced video game.
+ After all, with so many punches and kicks in the training data, it would
+ be a shame not to put them to use!
 \end_layout
 
 \begin_layout Standard
