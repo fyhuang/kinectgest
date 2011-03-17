@@ -1609,7 +1609,23 @@ split
 
 , but for the most part, gestures can be performed in real-time with fairly
  high recognition rates.
- We have created a demonstration video which can be viewed at 
+ We have created a demonstration video which can be viewed at:
+\end_layout
+
+\begin_layout Standard
+\begin_inset Box Frameless
+position "t"
+hor_pos "c"
+has_inner_box 1
+inner_pos "t"
+use_parbox 0
+width "100col%"
+special "none"
+height "1in"
+height_special "totalheight"
+status open
+
+\begin_layout Plain Layout
 \begin_inset Flex URL
 status collapsed
 
@@ -1620,7 +1636,12 @@ http://www.youtube.com/watch?v=9gNDSujA3DQ
 
 \end_inset
 
-.
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard

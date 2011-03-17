@@ -13,6 +13,8 @@ namespace FinalProject
 		TcpListener mListener;
 		Queue<RawJointState> mQueue;
 		bool mRunning;
+
+        public bool Running { get { return mRunning; } }
 		
 		public NetworkFrameListener (int port)
 		{
@@ -65,6 +67,7 @@ namespace FinalProject
 			}
 			finally {
 				mListener.Stop();
+                mRunning = false;
 			}
 		}
 		

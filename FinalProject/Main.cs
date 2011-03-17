@@ -215,6 +215,7 @@ namespace FinalProject
 						var cki = Console.ReadKey(true);
 						if ( cki.Key == ConsoleKey.X ) break;
 					}
+                    if ( !nfl.Running ) break;
 					Thread.Sleep(0);
 				}
 				
