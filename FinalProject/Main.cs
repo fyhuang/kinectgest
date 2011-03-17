@@ -77,9 +77,9 @@ namespace FinalProject
 		void Train() {
 			Console.WriteLine("Using cross-validation index {0}", mCV.Index);
 			
-			/*Console.WriteLine("Training recognizer");
+			Console.WriteLine("Training recognizer");
 			mRec.Train(LoadData(mGestureNames, true));
-			mRec.SaveModel(mRecFilename);*/
+			mRec.SaveModel(mRecFilename);
 			
 			Features.AllFeatures.LearnedFrameFeatures["NeutralStance"].Train(LoadFrames("ns"));
 			Features.AllFeatures.SaveModels();

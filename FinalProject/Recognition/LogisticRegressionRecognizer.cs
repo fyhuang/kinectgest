@@ -13,6 +13,8 @@ namespace FinalProject
 	public class LogisticRegressionRecognizer : IRecognizer
 	{
 		Dictionary<string, List<double>> mWeights;
+		List<int> mValidFeatures;
+		
 		double mStepSize;
 		double mConvergenceThreshold;
 		double mAlpha;
@@ -43,7 +45,8 @@ namespace FinalProject
 		}
 		public RecognizerResult RecognizeSingleGesture (InputGesture g)
 		{
-			List<Features.IGestureFeature> features = Features.AllFeatures.GestureFeatures;
+			List<Features.IGestureFeature> features = new List<Features.IGestureFeature>();
+			for ( int i = 0; i < mValidFeatures.Count - 1; i++ ) features.Add(Features.AllFeatures.GestureFeatures[i]);
 			
 			var results = new List<GestureWeight>();
 			foreach ( var kvp in mWeights ) {
@@ -68,7 +71,7 @@ namespace FinalProject
 		double _Sigmoid(List<double> weights, float[] feature_results) {
 			double sum = 0.0f;
 			for ( int i = 0; i < weights.Count; i++ ) {
-				sum += weights[i] * feature_results[i];
+				sum += weights[i] * feature_results[mValidFeatures[i]];
 			}
 			return Utility.Sigmoid(sum);
 		}
@@ -87,9 +90,8 @@ namespace FinalProject
 		                      List<LabeledGesture> inputs,
 		                      string class_name,
 		                      int max_iters) {
-			List<Features.IGestureFeature> features = Features.AllFeatures.GestureFeatures;
-			mWeights[class_name] = Enumerable.Range(0, features.Count + 1).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
-			var oldWeights = new List<double>(features.Count + 1);
+			mWeights[class_name] = Enumerable.Range(0, mValidFeatures.Count).Select(x => 0.0).ToList(); // The features.Count-indexed value is the "intercept"
+			var oldWeights = new List<double>(mValidFeatures.Count);
 			
 			var sw = new System.Diagnostics.Stopwatch(); sw.Start();
 			var num_iters = 0;
@@ -106,13 +108,13 @@ namespace FinalProject
 				oldWeights.AddRange(mWeights[class_name]);
 				double wsum = oldWeights.Sum();
 				
-				for ( int i = 0; i < features.Count + 1; i++ ) {
+				for ( int i = 0; i < mValidFeatures.Count; i++ ) {
 					var error_sum = 0.0;
 					for ( int j = 0; j < inputs.Count; j++ ) {
 						var g = inputs[j];
 						error_sum += ( ((g.Item1 == class_name) ? 1.0 : 0.0 ) -
 					           	     _Sigmoid(mWeights[class_name], feature_results[j]) ) *
-							feature_results[j][i];
+							feature_results[j][mValidFeatures[i]];
 					}
 					error_sum -= wsum * mAlpha;
 					mWeights[class_name][i] += mStepSize * error_sum;
@@ -154,6 +156,25 @@ namespace FinalProject
 			
 			// TODO: check for quasi/complete-separation, so that we can add
 			// tons of features without worry
+			var fcount = Features.AllFeatures.GestureFeatures.Count;
+			mValidFeatures = new List<int>(fcount);
+			for ( int f = 0; f < fcount; f++ ) {
+				bool separates = false;
+				foreach ( var kvp in gestures ) {
+					if ( _FeatureSeparatesData(f, kvp.Key, allgestures, feature_results) ) {
+						Console.WriteLine("WARNING: {0} separates data by {1}",
+						                  Features.AllFeatures.GestureFeatures[f].ToString(),
+						                  kvp.Key);
+						separates = true;
+						break;
+					}
+				}
+				
+				if ( !separates )
+					mValidFeatures.Add(f);
+			}
+			mValidFeatures.Add(fcount); // For the constant term
+			
 			
 			int max_iters = 0;
 			foreach ( var kvp in gestures ) {
@@ -171,6 +192,7 @@ namespace FinalProject
 			var formatter = new BinaryFormatter();
 			formatter.Serialize(stream, this.GetType());
 			formatter.Serialize(stream, mWeights);
+			formatter.Serialize(stream, mValidFeatures);
 			stream.Close();
 			
 			Console.WriteLine("Saved trained model to {0}", filename);
@@ -183,6 +205,7 @@ namespace FinalProject
 			var mtype = (Type)formatter.Deserialize(stream);
 			if ( !mtype.Equals(this.GetType()) ) throw new InvalidDataException();
 			mWeights = (Dictionary<string, List<double>>)formatter.Deserialize(stream);
+			mValidFeatures = (List<int>)formatter.Deserialize(stream);
 			stream.Close();
 			
 			Console.WriteLine("Loaded model from {0}", filename);
