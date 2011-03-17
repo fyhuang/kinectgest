@@ -45,8 +45,10 @@ namespace FinalProject
 			// TODO: punch stance
 			float tolerance = 0.85f;
 			float damping = mCurrSegmentSize / 175.0f;
-			//Console.WriteLine("Damping: {0}", damping * damping);
-			return AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js) > (tolerance - damping * damping);
+            float final = tolerance - damping * damping * damping;
+            var conf = AllFeatures.LearnedFrameFeatures["NeutralStance"].QueryFrame(js);
+			Console.WriteLine("Neutral tolerance: {1} / {0}", final, conf);
+			return conf > final;
 		}
 		
 		void _CheckIfSegmented() {

@@ -27,8 +27,8 @@ namespace LogFileVisualizer
 		{
 			mLogFilename = lfn;
 			
-			mScale = 1.0f;
-			mAngle = 0.0f;
+			mScale = 2.0f;
+			mAngle = (float)(Math.PI / 4.0);
 			mTime = 0.0f;
 		}
 		
