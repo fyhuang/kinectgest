@@ -23,7 +23,7 @@ namespace FinalProject
             // so all lists are length (n+1) where n is the number of features
             mWeights = new Dictionary<string, List<double>>();
             mStepSize = 0.1;
-            mConvergenceThreshold = 0.2;
+            mConvergenceThreshold = 0.8;
         }
 
         double _Sorta_sigmoid(List<double> weights, float[] feature_results)
