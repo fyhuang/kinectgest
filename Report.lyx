@@ -770,6 +770,8 @@ n still produced slightly better results, as well as being easier to work
  random.
  We are still not completely certain whether the separation or simply a
  particular quirk of the feature causes this.
+ Thus we decided to use the logistic regression as the final recognition
+ technique.
 \end_layout
 
 \begin_layout Subsection
@@ -789,6 +791,187 @@ We began with a fairly spartan set of features, measuring global (across
  hand.
  The gestures we started having problems with were initially the two flick
  gestures, the wave, and the clap.
+ We tried several feature types to account for the large errors in recognizing
+ the flicks.
+ First, we hypothesized that adding a directionality to the peak measurement
+ (whether max or min comes first) would help us to distinguish between the
+ left and right flicks.
+ Unfortunately, we discovered a particular quirk of the way the training
+ data was recorded: in many of the flick left training instances, the TA
+ returned his hand beyond the initial point, causing the min and max measurement
+s to go to unexpected values (and switch direction).
+ Thus we had to use more sophisticated features to capture this difference.
+ These and other quirks (the flicks were particularly inconsistent in their
+ execution in the training data), along with the relative paucity of training
+ instances, made the flicks among the hardest of the gestures to accurately
+ identify.
+\end_layout
+
+\begin_layout Standard
+Next, we tried to measure the overall 
+\begin_inset Quotes eld
+\end_inset
+
+skew
+\begin_inset Quotes erd
+\end_inset
+
+ of the gesture from the starting point: more positive or negative (say,
+ on the X axis).
+ This particular feature, however, caused such bad separation behavior that
+ we were unable to actually use it.
+ Next we incorporated a conditional measurement (say, to only apply the
+ feature in frames where the hand is beyond a certain plane), in order to
+ remove the influence of the starting and ending positions from the measurements.
+ We also started adding multi-joint features: for example, a feature which
+ measures the minimum distance between the hands at any point along the
+ input gesture.
+ This helped our performance greatly with the flick left gesture (and the
+ corresponding maximum distance feature with the flick right), as well as
+ the clap gesture (as might be expected).
+\end_layout
+
+\begin_layout Standard
+To capture the jump motion, we had to re-incorporate some absolute position
+ data, in this case using the absolute Y-position of the neck joint.
+ Differentiating wave from the flicks proved to be a small problem: while
+ we intuited that a feature which captured the number of critical points
+ would be able to distinguish them (wave would have more critical points),
+ implementing such a feature reliably proved to be difficult.
+ Since the data is quite noisy, many 
+\begin_inset Quotes eld
+\end_inset
+
+fake
+\begin_inset Quotes erd
+\end_inset
+
+ critical points appear in the input, especially at regions where the joint
+ does not move (i.e.
+ the real critical points and the beginning and end of sequences).
+ We had originally thought to implement smooting in the raw data converter,
+ but decided it was easier to implement some crude smooting in the feature
+ instead.
+ Despite the inclusion of significants amount of noise in this feature,
+ we found that it still had high effectiveness in distinguishing between
+ wave and the other gestures.
+\end_layout
+
+\begin_layout Subsection
+Segmentation algorithm
+\end_layout
+
+\begin_layout Standard
+The segmentation algorithm uses a more fixed heuristic, and learns only
+ the neutral stance feature.
+ Initially, we had thought about using a more fully-integrated system instead
+ of our current, more isolated design.
+ We met with Hendrik and discussed several more integrated gesture segmentation
+ solutions, such as HMMs over the entire input sequence and dynamic time
+ warping.
+\begin_inset CommandInset citation
+LatexCommand cite
+key "from-dtw-to-hmm"
+
+\end_inset
+
+ However, we determined that this method might be too expensive to implement
+ for a real-time recognizer (especially one that would be competing for
+ CPU time with the motion tracker).
+ While we did some basic tests, we did not pursue more advanced optimizations
+ such as dynamic programming methods.
+ Instead, we decided to use a simpler model for the segmentation phase,
+ reasoning that a simple 
+\begin_inset Quotes eld
+\end_inset
+
+performing gesture
+\begin_inset Quotes erd
+\end_inset
+
+ and 
+\begin_inset Quotes eld
+\end_inset
+
+not performing gesture
+\begin_inset Quotes erd
+\end_inset
+
+ distinction would be sufficient to achieve reasonable performance.
+ This intuition proved to be somewhat correct: our original implementation
+ of this idea was fairly successful.
+ (See figure TODO for a screen capture.) Basically, we look for long strings
+ of non-neutral-stance frames and call that a gesture.
+\end_layout
+
+\begin_layout Standard
+However, because no training data was provided for the neutral stance feature
+ upon which this method depends, we culled our own set of training data
+ from the provided sequences.
+ Since the sequences involved only Hendrik, we inadvertently trained the
+ model to match his body shape.
+ Thus, when we tested the segmenter on a sequence recorded by me, it failed
+ to segment even a single sequence.
+ In order to improve the generalization performance of the segmenter, we
+ tried a number of different approaches to learning the neutral stance.
+\end_layout
+
+\begin_layout Standard
+At first, we tried to use the joint angles instead of the joint positions,
+ reasoning that this would be more independent of body shape.
+ While this was true, even with extreme weighting and damping, we were unable
+ to effectively combat the noise from the angle measurements.
+ We then tried multiple modifications of combining the joint angles and
+ positions.
+ Our current model calculates modified joint angles using different joint
+ parents.
+ By using more 
+\begin_inset Quotes eld
+\end_inset
+
+distant
+\begin_inset Quotes erd
+\end_inset
+
+ parents, we cut down significantly on sampling noise (for example, in the
+ hand joints); and by choosing parents carefully, we can maintain sufficient
+ body-shape independence.
+ Currently, our model parents all the joints on the limbs to their respective
+ 
+\begin_inset Quotes eld
+\end_inset
+
+connecting
+\begin_inset Quotes erd
+\end_inset
+
+ joints on the main body (i.e.
+ right elbow, right wrist, and right palm are parented to the right shoulder).
+ This approach segments fairly effectively - we were able to achieve 60-70%
+ accuracy (subjectively) on our testing sequences.
+\end_layout
+
+\begin_layout Standard
+Finally, we noticed that most of the errors in our segmentation occurred
+ when the user made gestures too quickly and did not return fully to the
+ neutral stance.
+ In these cases, our algorithm wouldn't break the gesture in the middle,
+ and instead would attempt to recognize the entire sequence as a single
+ gesture.
+ To deal with this error, we introduced a damping factor to the confidence
+ threshold.
+ The damping factor increases as the length of the gesture increases.
+ That is, as the gesture currently being segmented gets longer, the threshold
+ of confidence that is required to call a frame a 
+\begin_inset Quotes eld
+\end_inset
+
+neutral stance
+\begin_inset Quotes erd
+\end_inset
+
+ gets smaller.
+ This change has helped considerably in faster-moving parts of sequences.
 \end_layout
 
 \begin_layout Section
@@ -1297,10 +1480,6 @@ Naïve Bayes model, cross-validation index = 0
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
@@ -1326,6 +1505,17 @@ d model.
 
 \begin_layout Section
 Conclusions and applications
+\end_layout
+
+\begin_layout Standard
+\begin_inset CommandInset bibtex
+LatexCommand bibtex
+bibfiles "Report/Sources"
+options "plain"
+
+\end_inset
+
+
 \end_layout
 
 \end_body
