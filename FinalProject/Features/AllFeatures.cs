@@ -22,13 +22,13 @@ namespace FinalProject.Features
 				new ProportionChange("left-wrist", JointState.JointComponent.Angle),
 				
 				new JointAmplitude("right-foot", JointState.JointComponent.PosY, false),
-				new ProportionChange("right-foot", JointState.JointComponent.Angle),
+				//new ProportionChange("right-foot", JointState.JointComponent.Angle),
 				new MinDistance("left-palm", "right-palm"),
 				new MaxDistance("left-palm", "right-palm"),
 				
 				new NeckAmplitude(),
 				new ProportionFrames(new HighFoot()),
-				//new ProportionFrames(new HandsTogether()),
+				new ProportionFrames(new HandsTogether()),
 				new ProportionFrames(new RHPastNeck()),
 				new ProportionFrames(new RHandForward()),
 				
