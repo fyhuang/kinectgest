@@ -1,8 +1,22 @@
-CS228 Final Project - segmentation-based gesture recognition
-Yifeng Huang <fyhuang> and Ivan Zhang <zhifanz>
+Kinect Gesture Recognizer
+=========================
+
+fyhuang, zhifanz
 
 
-1. Compiling
+# What is this?
+
+This is a gesture recognition project using the Kinect, written in C#. It uses a logistic regression and hand-coded features to achieve very high (> 90%) accuracy. In addition, there is a crude system for segmenting gestures in real-time, enabling fairly good real-time recognition.
+
+Currently, the system relies on the Stanford motion tracker, and imports data in that format. Some sample data is included in the repo.
+
+
+# Basic usage
+
+After compiling, run LogFileVisualizer.exe to view (in 3D) the gesture files, or to graph the joint data in those files. FinalProject.exe is the program that trains the recognition model and actually recognizes gestures. It includes facilities for testing based on gesture files, as well as reading data in (from stdin) in real-time.
+
+
+# Compiling
 
 The code has a few dependencies:
     * OpenTK <http://www.opentk.com/>, a graphics library
@@ -19,7 +33,7 @@ etc.
 You can use Visual Studio 2010 or MonoDevelop to compile the code. The code should run smoothly on Windows, Mac OS X, and Linux (the latter two with Mono <www.mono-project.com>, although plotting doesn't work on Mac). The binaries should also be portable.
 
 
-2. Running
+# Running
 
 There are two projects included: FinalProject, and LogFileVisualizer. Both should be run from a command-line (they take arguments) in the root directory: i.e. the one that contains Deps/, FinalProject/, LogFileVisualizer/, etc. Before running the programs, make sure the following things are present in the root directory:
 
@@ -27,11 +41,7 @@ gestures/track_{gesturename}_??.log
 gestures/frames/ns_??.log
 models/ (empty)
 
-The gestures/ directory contains all the training and test data. (We use cross-validation.) The frames/ subdirectory contains log files which train the neutral stance feature. For sample training data, see:
-
-http://huang.stanford.edu/gestures3.tar.bz2
-
-(This link will not be present indefinitely.)
+The gestures/ directory contains all the training and test data. (We use cross-validation.) The frames/ subdirectory contains log files which train the neutral stance feature. We include some sample gesture files; you will need your own software to record your own.
 
 
 FinalProject.exe has help text if you run it with no arguments. Explanations of possible actions:
