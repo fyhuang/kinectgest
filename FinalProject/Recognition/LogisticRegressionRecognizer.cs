@@ -136,6 +136,7 @@ namespace FinalProject
 		
 		bool _FeatureSeparatesData(int findex, string gname, List<LabeledGesture> data, float[][] feature_results)
 		{
+            return false; /*
 			float[] mins = new float[2];
 			float[] maxs = new float[2];
 			for ( int i = 0; i < data.Count; i++ ) {
@@ -150,7 +151,7 @@ namespace FinalProject
 			float thres = (range >= 1.0f) ? 1.0f / range : 1.0f;
 			if ( dist1 > thres || dist2 > thres )
 				return true;
-			return false;
+			return false; */
 		}
 		
 		public void Train (IDictionary<string, IList<InputGesture>> gestures)

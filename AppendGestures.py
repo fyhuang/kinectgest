@@ -7,7 +7,7 @@ import re
 import shutil
 
 
-out_template = "gestures/track_{}_{:02}.log"
+out_template = "gestures/track_{0}_{1:02}.log"
 def findLast(gname):
     for i in range(100):
         if not os.path.exists(out_template.format(gname, i)):
@@ -31,9 +31,9 @@ for filename in files:
 
         out_name = out_template.format(gname, lasts[gname])
         if os.path.exists(out_name):
-            print("Error: file {} already exists!".format(out_name))
+            print("Error: file {0} already exists!".format(out_name))
             sys.exit()
         shutil.move(filename, out_name)
-        print("Moved {} to {}".format(filename, out_name))
+        print("Moved {0} to {1}".format(filename, out_name))
     else:
-        print("Extraneous file {}".format(filename))
+        print("Extraneous file {0}".format(filename))

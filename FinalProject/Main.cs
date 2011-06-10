@@ -25,7 +25,7 @@ namespace FinalProject
 		}
 		
 		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training) {
-			return LoadData(names, training, "gestures/track_{0}_{1:00}.log", true);
+			return LoadData(names, training, "gestures/track_{0}_{1:00}.log", false);
 		}
 		IDictionary<string, IList<InputGesture>> LoadData(string[] names, bool training, string format, bool cv) {
 			var output = new Dictionary<string, IList<InputGesture>>();

@@ -16,6 +16,7 @@ namespace FinalProject.Features
 				new JointAmplitude("right-palm", JointState.JointComponent.PosY, false),
 				new JointAmplitude("right-palm", JointState.JointComponent.PosZ, false),
 				new JointAmplitude("left-palm", JointState.JointComponent.PosX, false),
+                new ProportionChange("right-palm", JointState.JointComponent.PosX),
 				
 				new JointAmplitude("right-wrist", JointState.JointComponent.Angle, false),
 				new ProportionChange("right-wrist", JointState.JointComponent.Angle),
@@ -31,7 +32,7 @@ namespace FinalProject.Features
 				new ProportionFrames(new RHPastNeck()),
 				new ProportionFrames(new RHandForward()),
 				
-				new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
+				//new NeutralDeviation("right-palm", JointState.JointComponent.PosX),
 				new NumberCriticalPoints("right-palm", JointState.JointComponent.PosX),
 				new DerivativeSum("right-palm", JointState.JointComponent.PosX, x => x.Component("right-palm", JointState.JointComponent.PosZ) > 0.15f),
 				new AxisCoincidence("right-palm", JointState.JointComponent.PosX, JointState.JointComponent.PosZ)
