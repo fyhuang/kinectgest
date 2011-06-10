@@ -18,21 +18,21 @@ namespace FinalProject.Features
 		
 		public NeutralStance() {
 			mWeights = new float[] {
-				0.0f,
+				0.1f, // Neck
 				0.1f, // Head
-				0.2f, // R shoulder
+				1.0f, // R shoulder
 				3.0f,
 				4.0f,
 				5.0f,
-				0.2f, // L shoulder
+				1.0f, // L shoulder
 				3.0f,
 				4.0f,
 				5.0f,
-				0.1f, // R hip
+				1.0f, // R hip
 				2.0f,
 				3.0f,
 				4.0f,
-				0.1f, // L hip
+				1.0f, // L hip
 				2.0f,
 				3.0f,
 				4.0f,
@@ -63,14 +63,15 @@ namespace FinalProject.Features
 			var total_error = 1.0f - error_sum / mWeights.Sum();
 			Console.WriteLine("Total error: {0}", total_error);
 			return total_error;*/
+
 			var error_sum = 0.0f;
 			for ( int i = 0; i < js.RelativeJoints.Length; i++ ) {
 				var reljoint = (js.RelativeJoints[i] - Parent(js, i));
 				reljoint.NormalizeFast();
-				var error = (reljoint - mAverage[i]).LengthFast;
-				error_sum += error;
+				var error = (reljoint - mAverage[i]).LengthFast / 2.0f;
+				error_sum += (float)Math.Pow(error, 1.0f/mWeights[i]);
 			}
-			var conf = 1.0f - error_sum / mVariance.Sum();
+			var conf = 1.0f - error_sum / mVariance.Sum() / mWeights.Sum();
 			//Console.WriteLine("Confidence: {0}", conf);
 			return conf;
 		}
