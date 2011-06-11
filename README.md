@@ -8,7 +8,9 @@ fyhuang, zhifanz
 
 This is a gesture recognition project using the Kinect, written in C#. It uses a logistic regression and hand-coded features to achieve very high (> 90%) accuracy. In addition, there is a crude system for segmenting gestures in real-time, enabling fairly good real-time recognition.
 
-Currently, the system relies on the Stanford motion tracker, and imports data in that format. Some sample data is included in the repo.
+Currently, the system relies on the Stanford motion tracker, and imports data in that format. Some sample data is included in the repo. You can see a video of the system in action here:
+
+http://www.youtube.com/watch?v=NQDl5YTh8uQ
 
 
 # Basic usage
